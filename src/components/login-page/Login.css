@@ -1,0 +1,129 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    width: 600px;
+    margin-top: 150px;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+}
+
+.login-icon {
+    width: 200px;  /* Adjust size as needed */
+    height: 80px;
+}
+
+.inputs {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    width: 96%;
+}
+
+.input-group label {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 5px; /* Moves label above the input */
+    font-weight: 400;
+}
+
+.input-group input {
+    width: 100%;
+    height: 36px;
+    background: #fff;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    outline: none;
+    color: #333;
+    cursor:pointer;
+}
+
+.input-group input:focus {
+    border-color: #3c009d;
+}
+
+.input-error {
+    border: 2px solid red;
+    outline: none;
+  }
+  
+/* Buttons */
+.submit-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    margin-top: 40px;
+}
+
+.submit {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 50px;
+    color: #fff;
+    background-color: #4CC9FE;
+    border: none;
+    border-radius: 7px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.submit:hover {
+    background-color: #077eb0;
+}
+
+.gray {
+    background: #EAEAEA;
+    color: #676767;
+    cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        width: 90%;
+        margin-top: 50px;
+    }
+
+    .input-group {
+        width: 100%;
+    }
+
+    .submit-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .submit {
+        width: 100%;
+    }
+}
+
+.terms {
+    font-size: 18px;
+    color: #110e0e;
+    text-align: center;
+    margin-top: 30px;
+}
