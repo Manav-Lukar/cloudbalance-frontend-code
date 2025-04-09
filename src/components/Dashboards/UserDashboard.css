@@ -1,35 +1,116 @@
-.dashboard-container {
-    padding: 40px;
-    font-family: Arial, sans-serif;
-    background-color: #f3f4f6;
-    min-height: 100vh;
-  }
-  
-  .dashboard-card {
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    max-width: 600px;
-    margin: auto;
-  }
-  
-  .dashboard-title {
-    color: #333;
-    margin-bottom: 20px;
-  }
-  
-  .logout-button {
-    margin-top: 30px;
-    padding: 10px 20px;
-    background-color: #0b93cd;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-  
-  .logout-button:hover {
-    background-color: #077eb0;
-  }
-  
+/* Overall layout */
+.dashboard-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+  background-color: #f3f4f6;
+}
+
+/* Navbar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f9f6f6;
+  color: white;
+  padding: 1rem 2rem;
+}
+
+.logout-btn {
+  background-color: #fff;
+  color: black;
+  border: none;
+  padding: 16px 16px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 18px;
+  display: flex;
+  gap: 10px;
+}
+
+.logout-btn:hover {
+  background-color: #e7e9ea;
+}
+
+/* Sidebar + Main section */
+.dashboard-content {
+  display: flex;
+  flex: 1;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 220px;
+  background-color: #ffffff;
+  padding: 1rem;
+  border-right: 1px solid #e0e0e0;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.03);
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar li {
+  padding: 12px 0;
+  color: #333;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.sidebar li:hover {
+  color: #0b93cd;
+}
+
+/* Main content */
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  background-color: #f3f4f6;
+}
+
+/* Welcome box */
+.dashboard-card {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  max-width: 800px;
+  margin-bottom: 30px;
+}
+
+.dashboard-title {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* Table styles */
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.user-table th,
+.user-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e0e0e0;
+  text-align: left;
+}
+
+.user-table th {
+  background-color: #077eb0;
+  font-weight: bold;
+  color: #fff;
+}
+
+.user-table tr:hover {
+  background-color: #f9f9f9;
+}

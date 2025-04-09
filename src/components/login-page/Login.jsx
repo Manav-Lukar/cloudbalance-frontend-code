@@ -29,7 +29,7 @@ const Login = () => {
       toast.error("Password is required.", { position: "top-right", theme: "colored" });
       newErrors.password = true;
       isValid = false;
-    } else if (userPassword.length < 6) {
+    } else if (userPassword.length < 4) {
       toast.error("Password must be at least 6 characters long.", { position: "top-right", theme: "colored" });
       newErrors.password = true;
       isValid = false;
