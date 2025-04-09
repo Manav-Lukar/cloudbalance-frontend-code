@@ -47,11 +47,16 @@ const Login = () => {
 
     try {
       const response = await fetch("http://localhost:8080/auth/login", {
-        method: "GET",
+        method: "POST",
         headers: {
-          Authorization: `Basic ${credentials}`
-        }
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email: email,
+          password: userPassword
+        })
       });
+      
 
       if (!response.ok) {
         toast.error("Invalid credentials. Please try again.", {
@@ -66,6 +71,7 @@ const Login = () => {
       localStorage.setItem("email", data.email);
       localStorage.setItem("role", data.role);
       localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("token",data.token);
 
       toast.success("Login successful!", {
         position: "top-right",

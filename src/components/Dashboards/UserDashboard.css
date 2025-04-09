@@ -13,7 +13,6 @@
   justify-content: space-between;
   align-items: center;
   background-color: #f9f6f6;
-  color: white;
   padding: 1rem 2rem;
 }
 
@@ -113,4 +112,38 @@
 
 .user-table tr:hover {
   background-color: #f9f9f9;
+}
+
+/* Pagination controls */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 20px;
+}
+
+.pagination-controls button {
+  background-color: #077eb0;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.pagination-controls button:hover {
+  background-color: #055f86;
+}
+
+.pagination-controls button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.pagination-controls span {
+  font-weight: bold;
+  color: #333;
 }

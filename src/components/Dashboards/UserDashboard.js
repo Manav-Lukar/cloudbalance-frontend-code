@@ -8,6 +8,9 @@ const UserDashboard = () => {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [selectedDashboard, setSelectedDashboard] = useState("User Management");
+  const [currentUserPage, setCurrentUserPage] = useState(0);
+
+  const usersPerPage = 9;
   const role = localStorage.getItem("role");
   const email = localStorage.getItem("email");
 
@@ -26,6 +29,7 @@ const UserDashboard = () => {
           const response = await fetch("http://localhost:8080/login/users");
           const data = await response.json();
           setUsers(data);
+          setCurrentUserPage(0); // reset to first page on dashboard switch
         } catch (error) {
           console.error("Error fetching users:", error);
         }
@@ -43,6 +47,12 @@ const UserDashboard = () => {
     switch (selectedDashboard) {
       case "User Management":
         if (role === "ROLE_ADMIN" || role === "ROLE_READ_ONLY") {
+          const totalPages = Math.ceil(users.length / usersPerPage);
+          const paginatedUsers = users.slice(
+            currentUserPage * usersPerPage,
+            (currentUserPage + 1) * usersPerPage
+          );
+
           return (
             <>
               <h1 className="dashboard-title">Welcome to User Management Dashboard</h1>
@@ -56,8 +66,8 @@ const UserDashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.length > 0 ? (
-                    users.map((user, index) => (
+                  {paginatedUsers.length > 0 ? (
+                    paginatedUsers.map((user, index) => (
                       <tr key={index}>
                         <td>{user.firstName}</td>
                         <td>{user.lastName}</td>
@@ -72,6 +82,29 @@ const UserDashboard = () => {
                   )}
                 </tbody>
               </table>
+
+              {/* Pagination Controls */}
+              <div className="pagination-controls">
+                <button
+                  onClick={() => setCurrentUserPage((prev) => Math.max(prev - 1, 0))}
+                  disabled={currentUserPage === 0}
+                >
+                  Previous
+                </button>
+                <span>
+                  Page {currentUserPage + 1} of {totalPages}
+                </span>
+                <button
+                  onClick={() =>
+                    setCurrentUserPage((prev) =>
+                      prev < totalPages - 1 ? prev + 1 : prev
+                    )
+                  }
+                  disabled={currentUserPage >= totalPages - 1}
+                >
+                  Next
+                </button>
+              </div>
             </>
           );
         } else {
@@ -115,7 +148,6 @@ const UserDashboard = () => {
   };
 
   return (
-    
     <div className="dashboard-layout">
       {/* Navbar */}
       <div className="navbar">
