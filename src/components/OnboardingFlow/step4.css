@@ -1,0 +1,24 @@
+.thank-you-container {
+    text-align: center;
+    padding: 3rem;
+  }
+  
+  .success-icon {
+    font-size: 3rem;
+    color: green;
+    margin-bottom: 1.5rem;
+  }
+  
+  .onboard-info-box {
+    background-color: #eef2ff;
+    padding: 1rem;
+    margin-top: 1.5rem;
+    border-radius: 8px;
+  }
+  
+  .start-onboarding-link {
+    color: #3b82f6;
+    text-decoration: underline;
+    font-weight: 500;
+  }
+  

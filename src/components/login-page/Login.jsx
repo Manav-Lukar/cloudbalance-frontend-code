@@ -15,6 +15,7 @@ const Login = () => {
     event.preventDefault();
 
     try {
+      // 🔐 Step 1: Login
       const response = await fetch("http://localhost:8080/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -30,12 +31,39 @@ const Login = () => {
       }
 
       const data = await response.json();
+      const token = data.token;
 
+      // Save to localStorage
+      localStorage.setItem("userId", data.userId);
+      localStorage.setItem("firstName", data.firstName);
+      localStorage.setItem("lastName", data.lastName);
       localStorage.setItem("email", data.email);
       localStorage.setItem("role", data.role);
       localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("token", data.token);
+      localStorage.setItem("token", token); // Make sure token is stored
 
+      // 🕒 Step 2: Last login authenticate API using token in headers
+      try {
+        const lastLoginRes = await fetch("http://localhost:8080/login/authenticate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            email: email,
+            password: userPassword,
+          }),
+        });
+
+        if (!lastLoginRes.ok) {
+          console.warn("Failed to update last login.");
+        }
+      } catch (lastLoginErr) {
+        console.error("Error in last login API:", lastLoginErr);
+      }
+
+      // ✅ Success toast and redirect
       toast.success("Login successful!", {
         position: "top-right",
         theme: "colored",
@@ -44,7 +72,7 @@ const Login = () => {
       setTimeout(() => navigate("/user-dashboard"), 1000);
     } catch (error) {
       console.error("Login failed:", error);
-      navigate("/error"); // Navigate to error page
+      navigate("/error"); // fallback
     }
   };
 

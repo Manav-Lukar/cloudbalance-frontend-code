@@ -1,20 +1,57 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import "./UserDashboard.css";
 import loginIcon from "../../assets/Cloudkeeper_New.svg";
 import logOutIcon from "../../assets/logout.png";
 import userIcon from "../../assets/user icon.png";
+import editIcon from "../../assets/pencil.svg"
 import AddUserPage from "../AddUser/AddUserPage";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPencil } from "@fortawesome/free-solid-svg-icons";
+import OnboardingFlow from "../OnboardingFlow/OnboardingFlow";
+
+// Custom hook for fetching users
+const useFetchUsers = (role, selectedDashboard) => {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (
+      selectedDashboard === "User Management" &&
+      (role === "ADMIN" || role === "READ_ONLY")
+    ) {
+      const fetchUsers = async () => {
+        try {
+          setLoading(true);
+          const response = await fetch("http://localhost:8080/login/users");
+          const data = await response.json();
+          setUsers(data);
+        } catch (error) {
+          console.error("Error fetching users:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchUsers();
+    }
+  }, [selectedDashboard, role]);
+
+  return { users, loading };
+};
 
 const UserDashboard = () => {
   const navigate = useNavigate();
-  const [users, setUsers] = useState([]);
-  const [selectedDashboard, setSelectedDashboard] = useState("User Management");
+
+  // Load dashboard from localStorage or default to "User Management"
+  const [selectedDashboard, setSelectedDashboard] = useState(() => {
+    return localStorage.getItem("selectedDashboard") || "User Management";
+  });
   const [currentUserPage, setCurrentUserPage] = useState(0);
   const [showAddUser, setShowAddUser] = useState(false);
 
   const usersPerPage = 9;
   const role = localStorage.getItem("role");
+  const firstName = localStorage.getItem("firstName");
   const email = localStorage.getItem("email");
 
   useEffect(() => {
@@ -24,180 +61,183 @@ const UserDashboard = () => {
     }
   }, [navigate]);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch("http://localhost:8080/login/users");
-        if (!response.ok) {
-          throw new Error("Failed to fetch users");
-        }
-        const data = await response.json();
-        setUsers(data);
-        setCurrentUserPage(0);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        navigate("/error"); // Navigate to error page
-      }
-    };
-
-    if (
-      selectedDashboard === "User Management" &&
-      (role === "ADMIN" || role === "READ_ONLY")
-    ) {
-      fetchUsers();
-    }
-  }, [selectedDashboard, role, navigate]);
+  const { users, loading } = useFetchUsers(role, selectedDashboard);
 
   const handleLogout = () => {
     localStorage.clear();
     navigate("/");
   };
 
-  const renderDashboardContent = () => {
-    switch (selectedDashboard) {
-      case "User Management":
-        if (role === "ADMIN" || role === "READ_ONLY") {
-          const totalPages = Math.ceil(users.length / usersPerPage);
-          const paginatedUsers = users.slice(
-            currentUserPage * usersPerPage,
-            (currentUserPage + 1) * usersPerPage
-          );
+  const handleEditClick = (userId) => {
+    console.log(`Editing user with ID: ${userId}`);
+  };
 
-          return (
-            <>
-              <div className="dashboard-header">
-                <h1 className="dashboard-title">Users</h1>
-              </div>
-              {role === "ADMIN" && (
-                <button
-                  className="add-user-btn"
-                  onClick={() => setShowAddUser(true)}
-                >
-                  ✚ Add New User
-                </button>
-              )}
-              {showAddUser && (
-                <div className="add-user-overlay">
-                  <AddUserPage />
-                  <button
-                    className="close-add-user"
-                    onClick={() => setShowAddUser(false)}
-                  ></button>
-                </div>
-              )}
-              {!showAddUser && (
-                <>
-                  <table className="user-table">
-                    <thead>
+  const handlePagination = useCallback((direction) => {
+    setCurrentUserPage((prev) => prev + direction);
+  }, []);
+
+  // Function to change dashboard and save to localStorage
+  const handleDashboardChange = (dashboard) => {
+    setSelectedDashboard(dashboard);
+    localStorage.setItem("selectedDashboard", dashboard);
+  };
+
+  const renderDashboardContent = useMemo(() => {
+    if (
+      selectedDashboard === "User Management" &&
+      (role === "ADMIN" || role === "READ_ONLY")
+    ) {
+      const totalPages = Math.ceil(users.length / usersPerPage);
+      const paginatedUsers = users.slice(
+        currentUserPage * usersPerPage,
+        (currentUserPage + 1) * usersPerPage
+      );
+
+      return (
+        <>
+          {!showAddUser && (
+            <div className="dashboard-header">
+              <h1 className="dashboard-title">Users</h1>
+            </div>
+          )}
+
+          {showAddUser ? (
+            <button className="back-btn" onClick={() => setShowAddUser(false)}>
+              ⬅ Back to Dashboard
+            </button>
+          ) : (
+            role === "ADMIN" && (
+              <button
+                className="add-user-btn"
+                onClick={() => setShowAddUser(true)}
+              >
+                + Add New User
+              </button>
+            )
+          )}
+
+          <div className={`form-container ${showAddUser ? "no-margin" : ""}`}>
+            {showAddUser ? (
+              <AddUserPage setShowAddUser={setShowAddUser} />
+            ) : (
+              <>
+                <table className="user-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>First Name</th>
+                      <th>Last Name</th>
+                      <th>Email</th>
+                      <th>Role</th>
+                      <th>Last Login</th>
+                      <th>Edit</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loading ? (
                       <tr>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Last Login</th>
+                        <td colSpan="7">Loading users...</td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {paginatedUsers.length > 0 ? (
-                        paginatedUsers.map((user, index) => (
-                          <tr key={index}>
-                            <td>{user.firstName}</td>
-                            <td>{user.lastName}</td>
-                            <td>{user.email}</td>
-                            <td>{user.role}</td>
-                            <td>{user.lastLogin}</td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="5">Loading users...</td>
+                    ) : (
+                      paginatedUsers.map((user, index) => (
+                        <tr key={index}>
+                          <td>{user.id}</td>
+                          <td>{user.firstName}</td>
+                          <td>{user.lastName}</td>
+                          <td>{user.email}</td>
+                          <td>{user.role}</td>
+                          <td>{user.lastLogin}</td>
+                          <td>
+                            <button
+                              onClick={() => handleEditClick(user.id)}
+                              className="edit-btn"
+                            >
+                              <img src={editIcon} alt="edit-icon" />
+                              {/* <FontAwesomeIcon icon={faPencil} /> */}
+                            </button>
+                          </td>
                         </tr>
-                      )}
-                    </tbody>
-                  </table>
-
-                  <div className="pagination-controls">
-                    <button
-                      onClick={() =>
-                        setCurrentUserPage((prev) => Math.max(prev - 1, 0))
-                      }
-                      disabled={currentUserPage === 0}
-                    >
-                      Previous
-                    </button>
-                    <span>
-                      Page {currentUserPage + 1} of {totalPages}
-                    </span>
-                    <button
-                      onClick={() =>
-                        setCurrentUserPage((prev) =>
-                          prev < totalPages - 1 ? prev + 1 : prev
-                        )
-                      }
-                      disabled={currentUserPage >= totalPages - 1}
-                    >
-                      Next
-                    </button>
-                  </div>
-                </>
-              )}
-            </>
-          );
-        } else {
-          return <h1>No Permission</h1>;
-        }
-
-      default:
-        return null;
-    }
-  };
-
-  const renderSidebar = () => {
-    if (role === "ADMIN" || role === "READ_ONLY") {
-      return (
-        <ul>
-          <li onClick={() => setSelectedDashboard("User Management")}>
-            User Management
-          </li>
-          <li onClick={() => setSelectedDashboard("Onboarding Dashboard")}>
-            Onboarding Dashboard
-          </li>
-          <li onClick={() => setSelectedDashboard("Cost Explorer")}>
-            Cost Explorer
-          </li>
-          <li onClick={() => setSelectedDashboard("AWS Services")}>
-            AWS Services
-          </li>
-        </ul>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+                <div className="pagination-controls">
+                  <button
+                    onClick={() => handlePagination(-1)}
+                    disabled={currentUserPage === 0}
+                  >
+                    Previous
+                  </button>
+                  <span>
+                    Page {currentUserPage + 1} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => handlePagination(1)}
+                    disabled={currentUserPage >= totalPages - 1}
+                  >
+                    Next
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </>
       );
-    } else if (role === "CUSTOMER") {
-      return (
-        <ul>
-          <li onClick={() => setSelectedDashboard("Cost Explorer")}>
-            Cost Explorer
-          </li>
-          <li onClick={() => setSelectedDashboard("AWS Services")}>
-            AWS Services
-          </li>
-        </ul>
-      );
-    } else {
-      return null;
     }
-  };
+
+    if (selectedDashboard === "Onboarding Dashboard") {
+      return <OnboardingFlow />;
+    }
+
+    return <h1>Welcome to {selectedDashboard}</h1>;
+  }, [selectedDashboard, role, users, currentUserPage, loading, showAddUser]);
+
+  const sidebarMenu = useMemo(() => {
+    const menuItems = {
+      ADMIN: [
+        {
+          label: "User Management",
+          action: () => handleDashboardChange("User Management"),
+        },
+        {
+          label: "Onboarding Dashboard",
+          action: () => handleDashboardChange("Onboarding Dashboard"),
+        },
+        {
+          label: "Cost Explorer",
+          action: () => handleDashboardChange("Cost Explorer"),
+        },
+        {
+          label: "AWS Services",
+          action: () => handleDashboardChange("AWS Services"),
+        },
+      ],
+      CUSTOMER: [
+        {
+          label: "Cost Explorer",
+          action: () => handleDashboardChange("Cost Explorer"),
+        },
+        {
+          label: "AWS Services",
+          action: () => handleDashboardChange("AWS Services"),
+        },
+      ],
+    };
+    return menuItems[role] || [];
+  }, [role]);
 
   return (
     <div className="dashboard-layout">
+      {/* Navbar */}
       <div className="navbar">
         <h2>
           <img src={loginIcon} alt="Cloudkeeper logo" />
         </h2>
+
         <div className="navbar-right">
           <div className="user-info">
             <img src={userIcon} alt="User Icon" className="user-icon" />
-            <p className="welcome-text">
-              Welcome, {role?.replace("ROLE_", "")}
-            </p>
+            <p className="welcome-text">Welcome, {firstName}</p>
           </div>
           <button className="logout-btn" onClick={handleLogout}>
             <img src={logOutIcon} alt="Logout" />
@@ -205,9 +245,19 @@ const UserDashboard = () => {
           </button>
         </div>
       </div>
+
+      {/* Sidebar + Main Content */}
       <div className="dashboard-content">
-        <div className="sidebar">{renderSidebar()}</div>
-        <div className="main-content">{renderDashboardContent()}</div>
+        <div className="sidebar">
+          <ul>
+            {sidebarMenu.map((item, index) => (
+              <li key={index} onClick={item.action}>
+                {item.label}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="main-content">{renderDashboardContent}</div>
       </div>
     </div>
   );

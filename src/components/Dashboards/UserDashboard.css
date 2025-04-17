@@ -1,10 +1,25 @@
+:root {
+  --bg-main: #f3f4f6;
+  --bg-card: #fff;
+  --bg-navbar: #fff;
+  --bg-btn-primary: #0056b3;
+  --bg-btn-hover: #04356e;
+  --bg-btn-secondary: #077eb0;
+  --bg-btn-secondary-hover: #055f86;
+  --text-main: #333;
+  --text-muted: #030303;
+  --text-white: #fff;
+  --border-light: #e0e0e0;
+  --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
 /* Overall layout */
 .dashboard-layout {
   display: flex;
   flex-direction: column;
-  height: 1vh;
+  height: 100vh;
   font-family: Arial, sans-serif;
-  background-color: #f3f4f6;
+  background-color: var(--bg-main);
 }
 
 /* Navbar */
@@ -12,19 +27,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #f9f6f6;
-  padding: 1rem 1rem;
+  background-color: var(--bg-navbar);
+  padding: 0.1rem 1rem;
 }
 
-.navbar-right {
+.navbar-right,
+.user-info {
   display: flex;
   align-items: center;
   gap: 1.5rem;
 }
 
 .user-info {
-  display: flex;
-  align-items: center;
   gap: 0.6rem;
 }
 
@@ -38,22 +52,23 @@
 .welcome-text {
   font-size: 1rem;
   font-weight: 600;
-  color: #333;
+  color: var(--text-main);
   text-transform: capitalize;
 }
 
 .logout-btn {
-  background-color: #fff;
-  color: black;
+  background-color: var(--text-white);
+  color: var(--text-main);
   border: none;
-  padding: 16px 16px;
+  padding: 10px 15px;
   cursor: pointer;
   border-radius: 6px;
   font-weight: bold;
-  font-size: 18px;
+  font-size: 14px;
   display: flex;
   align-items: center;
   gap: 10px;
+  transition: background-color 0.3s ease;
 }
 
 .logout-btn:hover {
@@ -64,15 +79,16 @@
 .dashboard-content {
   display: flex;
   flex: 1;
+  overflow: hidden;
 }
 
 /* Sidebar */
 .sidebar {
   width: 230px;
-  border-radius: 10px;
-  background-color: #ffffff;
   padding: 2rem;
-  border-right: 1px solid #e0e0e0;
+  background-color: var(--bg-card);
+  /* border-radius: 15px 15px 0 10px; */
+  border-right: 1px solid var(--border-light);
   box-shadow: 2px 0 4px rgba(0, 0, 0, 0.03);
 }
 
@@ -83,35 +99,41 @@
 }
 
 .sidebar li {
-  padding: 12px 0;
-  color: #333;
+  padding: 15px 0;
+  color: var(--text-main);
+  font-weight: 900;
+  font-size: 16px;
   cursor: pointer;
-  font-weight: 700;
+  transition: color 0.3s ease;
 }
 
 .sidebar li:hover {
   color: #0b93cd;
+  /* background-color: #0b93cd;
+  border-radius: 10px;
+  padding: 15px; */
 }
 
 /* Main content */
 .main-content {
   flex: 1;
   padding: 2rem;
-  background-color: #f3f4f6;
+  background-color: var(--bg-main);
+  overflow-y: auto;
 }
 
-/* Welcome box */
+/* Dashboard card */
 .dashboard-card {
-  background-color: #fff;
+  background-color: var(--bg-card);
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-soft);
   max-width: 800px;
   margin-bottom: 30px;
 }
 
 .dashboard-title {
-  color: #333;
+  color: var(--text-main);
   margin-bottom: 20px;
 }
 
@@ -119,8 +141,8 @@
 .user-table {
   width: 100%;
   border-collapse: collapse;
-  background-color: #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  background-color: var(--bg-card);
+  box-shadow: var(--shadow-soft);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -128,21 +150,20 @@
 .user-table th,
 .user-table td {
   padding: 14px 16px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border-light);
   text-align: left;
 }
 
 .user-table th {
-  background-color: #fff;
   font-weight: bold;
-  color: #030303;
+  color: var(--text-muted);
 }
 
 .user-table tr:hover {
   background-color: #f9f9f9;
 }
 
-/* Pagination controls */
+/* Pagination */
 .pagination-controls {
   display: flex;
   justify-content: center;
@@ -152,8 +173,8 @@
 }
 
 .pagination-controls button {
-  background-color: #077eb0;
-  color: white;
+  background-color: var(--bg-btn-primary);
+  color: var(--text-white);
   border: none;
   padding: 10px 16px;
   font-size: 14px;
@@ -163,7 +184,7 @@
 }
 
 .pagination-controls button:hover {
-  background-color: #055f86;
+  background-color: var(--bg-btn-secondary-hover);
 }
 
 .pagination-controls button:disabled {
@@ -173,28 +194,87 @@
 
 .pagination-controls span {
   font-weight: bold;
-  color: #333;
+  color: var(--text-main);
 }
 
+/* Buttons */
 .add-user-btn {
-  background-color: #0056b3;
-  color: white;
-  padding: 16px 15px;
+  background-color: var(--bg-btn-primary);
+  font-size: 14px;
+  color: var(--text-white);
+  padding: 10px 15px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-weight:bolder;
-  font-size: 15px;
+  /* font-weight: bolder; */
   margin-left: auto;
   margin-bottom: 30px;
+  transition: background-color 0.3s ease;
 }
 
 .add-user-btn:hover {
-  background-color: #04356e;
+  background-color: var(--bg-btn-hover);
+}
+.edit-btn {
+  background: none;            /* No background */
+  color: inherit;              /* Inherit text color (or set a specific one if needed) */
+  border: none;                /* No border */
+  border-radius: 4px;          /* Optional rounding */
+  cursor: pointer;
+  padding: 6px 1px;           /* Optional spacing */
+  transition: transform 0.3s ease;
 }
 
+.edit-btn:hover {
+  transform: scale(1.05);      /* Subtle hover effect */
+}
+
+.edit-btn:disabled {
+  background: none;
+  color: #b13131;
+  cursor: not-allowed;
+  opacity: 0.5;                /* Optional visual cue for disabled */
+}
+
+
+/* Header */
 .dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+/* Back button */
+.back-btn {
+  background-color: var(--bg-btn-primary);
+  color: var(--text-white);
+  padding: 10px 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bolder;
+  font-size: 14px;
+  margin-bottom: 30px;
+  transition: background-color 0.3s ease;
+}
+
+.back-btn:hover {
+  background-color: var(--bg-btn-hover);
+}
+.custom-sidebar {
+  background-color: #f0f4f8;
+  height: 100vh;
+  min-width: 220px;
+  padding-top: 20px;
+  border-right: 1px solid #dcdcdc;
+}
+
+.custom-sidebar .pro-menu-item {
+  font-size: 16px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.custom-sidebar .pro-menu-item:hover {
+  background-color: #e0e7ef;
 }

@@ -1,0 +1,224 @@
+.onboarding-container {
+    max-width: 100%;
+    margin: 5px auto;
+    padding: 30px 40px;
+    background-color: #fff;
+    /* border: 2px solid #d1d5db; */
+    border: none;
+    /* border-radius: 8px; */
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+.onboarding-title {
+  text-align: left;
+  font-size: 28px;
+  color: #1f2937;
+  margin-bottom: 30px;
+  border: none;
+  /* overflow-y: hidden; */
+}
+
+.onboarding-steps {
+  list-style: decimal;
+  padding-left: 20px;
+  color: #374151;
+}
+
+.onboarding-steps li {
+  margin-bottom: 25px;
+  font-size: 16px;
+  line-height: 1.6;
+  position: relative;
+}
+
+a {
+  color: #0073bb;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.code-block {
+  background-color: #f3f4f6;
+  padding: 10px;
+  border-left: 4px solid #0073bb;
+  border-radius: 4px;
+  margin-top: 10px;
+  font-family: monospace;
+  white-space: pre-wrap;
+  max-height: 200px;
+  overflow-x: auto;
+}
+.copy-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #374151;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  z-index: 1;
+}
+
+.copy-btn:hover {
+  color: #0073bb;
+}
+
+.copy-success {
+  color: green;
+  font-size: 14px;
+  margin-top: 6px;
+  animation: fadeOut 1.5s ease-in-out;
+}
+
+.sample-arn-box {
+  background-color: #e5e7eb;
+  padding: 10px;
+  margin-top: 10px;
+  display: flex;
+  border-radius: 4px;
+  font-size: 15px;
+  color: #111827;
+}
+
+.arn-input {
+  display: block;
+  margin-top: 12px;
+  padding: 10px 12px;
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  font-size: 15px;
+}
+
+.step-image {
+  margin-top: 25px;
+  max-width: 100%;
+}
+
+.step-image img {
+  width: 100%;
+  max-width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  display: block;
+}
+
+.arn-inputs-row {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+  flex-wrap: wrap; /* Optional: keeps it responsive on small screens */
+}
+
+.arn-inputs-row .arn-input {
+  flex: 1;
+  min-width: 200px; /* Ensures they don’t become too small on narrow screens */
+}
+
+.onboarding-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+}
+
+.cancel-btn,
+.next-btn {
+  padding: 10px 15px;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+.cancel-btn:hover {
+  background-color: #d1d5db;
+}
+
+.next-btn {
+  background-color: #0056b3;
+  color: #ffffff;
+}
+
+.next-btn:hover {
+  background-color: #005a94;
+}
+
+.role-copy-block {
+  display: flex;
+  background-color: #f9fafb;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 10px 120px;
+  margin-top: 10px;
+  width: fit-content;
+  font-family: monospace;
+  position: relative;
+}
+
+.role-copy-inline {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  background-color: #f3f4f6;
+  border: 1px solid #d1d5db;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-family: monospace;
+  color: #111827;
+  width: fit-content;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.copy-btn-inline {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #374151;
+  transition: color 0.2s ease;
+}
+
+.copy-btn-inline:hover {
+  color: #0073bb;
+}
+
+.role-code {
+  font-size: 15px;
+}
+
+.role-code {
+  font-size: 15px;
+  margin-right: 8px;
+  color: #111827;
+}
+
+.role-copy-block .copy-btn {
+  position: static;
+  font-size: 18px;
+  color: #4b5563;
+}
+
+.role-copy-block .copy-btn:hover {
+  color: #0073bb;
+}
+
+.required {
+  color: red;
+}
+
+.checkbox-section {
+  display: flex;
+  align-items: center;
+}

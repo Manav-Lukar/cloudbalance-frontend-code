@@ -10,8 +10,7 @@ const AddUserPage = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("CUSTOMER");
-  const [cloudDropdownOpen, setCloudDropdownOpen] = useState(false);
+  const [role, setRole] = useState("ADMIN");
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -32,9 +31,7 @@ const AddUserPage = () => {
           },
         });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
         const data = await response.json();
         setCloudAccounts(data);
@@ -50,10 +47,14 @@ const AddUserPage = () => {
     }
   }, [navigate, userRole, token]);
 
-  const handleCheckboxChange = (id) => {
-    setSelectedAccountIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
+  const handleAssociate = (id) => {
+    if (!selectedAccountIds.includes(id)) {
+      setSelectedAccountIds((prev) => [...prev, id]);
+    }
+  };
+
+  const handleRemoveAssociation = (id) => {
+    setSelectedAccountIds((prev) => prev.filter((item) => item !== id));
   };
 
   const handleSubmit = async (e) => {
@@ -79,7 +80,7 @@ const AddUserPage = () => {
       });
 
       if (response.ok) {
-        setSuccessMessage("✅ User created successfully!");
+        setSuccessMessage("User created successfully!");
         setErrorMessage("");
         setTimeout(() => {
           navigate("/user-dashboard");
@@ -94,17 +95,24 @@ const AddUserPage = () => {
           errorMessage = errorText;
         }
         setSuccessMessage("");
-        setErrorMessage("❌ Failed to create user: " + errorMessage);
+        setErrorMessage(" Failed to create user: " + errorMessage);
       }
     } catch (error) {
       console.error("Error while creating user:", error);
       setSuccessMessage("");
-      setErrorMessage("❌ An error occurred. Check console for details.");
+      setErrorMessage(" An error occurred. Check console for details.");
     }
   };
 
+  const availableAccounts = cloudAccounts.filter(
+    (account) => !selectedAccountIds.includes(account.id)
+  );
+  const associatedAccounts = cloudAccounts.filter((account) =>
+    selectedAccountIds.includes(account.id)
+  );
+
   return (
-    <div className="add-user-page">
+    <>
       <h2>Add New User</h2>
 
       {successMessage && <div className="message success">{successMessage}</div>}
@@ -166,32 +174,40 @@ const AddUserPage = () => {
 
         {role === "CUSTOMER" && (
           <div className="form-group full-width">
-            <label
-              className="dropdown-label"
-              onClick={() => setCloudDropdownOpen(!cloudDropdownOpen)}
-            >              Cloud Accounts
-              <span className={`arrow ${cloudDropdownOpen ? "open" : ""}`}>▼</span>
-            </label>
-
-            {cloudDropdownOpen && (
-              <div className="checkbox-dropdown">
-                {cloudAccounts.length === 0 ? (
-                  <p>No cloud accounts available.</p>
+            <label className="cloud-label">Cloud Accounts</label>
+            <div className="cloud-account-container">
+              <div className="cloud-box">
+                <h4>Available Cloud Accounts</h4>
+                {availableAccounts.length === 0 ? (
+                  <p>No accounts</p>
                 ) : (
-                  cloudAccounts.map((account) => (
-                    <label key={account.id} className="checkbox-item">
-                      <input
-                        type="checkbox"
-                        value={account.id}
-                        checked={selectedAccountIds.includes(account.id)}
-                        onChange={() => handleCheckboxChange(account.id)}
-                      />
+                  availableAccounts.map((account) => (
+                    <div key={account.id} className="cloud-item">
                       {account.accountName}
-                    </label>
+                      <button type="button" onClick={() => handleAssociate(account.id)}>
+                        →
+                      </button>
+                    </div>
                   ))
                 )}
               </div>
-            )}
+
+              <div className="cloud-box">
+                <h4>Associated Cloud Accounts</h4>
+                {associatedAccounts.length === 0 ? (
+                  <p>No associated accounts</p>
+                ) : (
+                  associatedAccounts.map((account) => (
+                    <div key={account.id} className="cloud-item">
+                      {account.accountName}
+                      <button type="button" onClick={() => handleRemoveAssociation(account.id)}>
+                        ←
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
         )}
 
@@ -199,7 +215,7 @@ const AddUserPage = () => {
           <button type="submit">Add User</button>
         </div>
       </form>
-    </div>
+    </>
   );
 };
 
