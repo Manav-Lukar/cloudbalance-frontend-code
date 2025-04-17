@@ -495,7 +495,7 @@ const trustPolicyFour = {
   ],
 };
 
-const Step2 = () => {
+const Step2 = ({ setStep }) => {
   const navigate = useNavigate();
 
   const handlePolicyCopy = (policy) => {
@@ -517,8 +517,16 @@ const Step2 = () => {
       className="code-block-wrapper"
       onClick={() => handlePolicyCopy(policy)}
       title="Click to copy"
+      style={{ cursor: "pointer" }}
     >
-      <button className="copy-btn" title="Copy to clipboard">
+      <button
+        className="copy-btn"
+        title="Copy to clipboard"
+        onClick={(e) => {
+          e.stopPropagation();
+          handlePolicyCopy(policy);
+        }}
+      >
         <FiCopy />
       </button>
       <pre className="code-block">{JSON.stringify(policy, null, 2)}</pre>
@@ -530,9 +538,17 @@ const Step2 = () => {
       className="role-copy-inline"
       onClick={() => handleRoleNameCopy(name)}
       title="Click to copy"
+      style={{ cursor: "pointer" }}
     >
       <code className="role-code">{name}</code>
-      <button className="copy-btn-inline">
+      <button
+        className="copy-btn-inline"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleRoleNameCopy(name);
+        }}
+        title="Copy"
+      >
         <FiCopy />
       </button>
     </div>
@@ -607,7 +623,7 @@ const Step2 = () => {
         <li>
           Click <strong>Add permissions &gt; Attach Policy</strong>
           <div className="step-image">
-            <img src={permission} alt="ck tuner" />
+            <img src={permission} alt="attach policy" />
           </div>
         </li>
 
@@ -619,7 +635,7 @@ const Step2 = () => {
           </strong>{" "}
           and select them.
           <div className="step-image">
-            <img src={create_policy} alt="create policy" />
+            <img src={create_policy} alt="select policies" />
           </div>
         </li>
 
@@ -630,7 +646,7 @@ const Step2 = () => {
         <li>
           Click <strong>Add permissions &gt; Create inline policy</strong>.
           <div className="step-image">
-            <img src={permission} alt="ck tuner" />
+            <img src={permission} alt="inline policy" />
           </div>
         </li>
 
@@ -648,6 +664,14 @@ const Step2 = () => {
           {renderRoleName("S3CrossAccountReplication")}
         </li>
       </ol>
+      <div className="onboarding-buttons">
+        <button className="cancel-btn" onClick={() => setStep(1)}>
+          Back
+        </button>
+        <button className="next-btn" onClick={() => setStep(3)}>
+          Create CUR
+        </button>
+      </div>
     </div>
   );
 };

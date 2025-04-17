@@ -278,3 +278,7 @@
 .custom-sidebar .pro-menu-item:hover {
   background-color: #e0e7ef;
 }
+
+.clickable-logo {
+  cursor: pointer;
+}

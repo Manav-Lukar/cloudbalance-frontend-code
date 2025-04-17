@@ -32,29 +32,38 @@ const trustPolicy = {
   ],
 };
 
-const Step1 = () => {
+const Step1 = ({ setStep }) => {
   const navigate = useNavigate();
   const [roleArn, setRoleArn] = useState("");
   const [accountId, setAccountId] = useState("");
   const [accountName, setAccountName] = useState("");
+  const [errors, setErrors] = useState({});
 
   const handlePolicyCopy = () => {
     navigator.clipboard.writeText(JSON.stringify(trustPolicy, null, 2));
-    toast.success("Data Copied!");
+    toast.success("Data copied!");
   };
 
   const handleRoleNameCopy = () => {
     navigator.clipboard.writeText("CK-Tuner-Role-dev2");
-    toast.success("Data Copied!");
+    toast.success("Data copied!");
   };
 
   const handleNext = () => {
     navigate("/onboarding/customer-managed-policies");
   };
 
+  const validateInputs = () => {
+    const newErrors = {};
+    if (!roleArn.trim()) newErrors.roleArn = "Role ARN is required";
+    if (!accountId.trim()) newErrors.accountId = "Account ID is required";
+    if (!accountName.trim()) newErrors.accountName = "Account Name is required";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   return (
     <div className="onboarding-container">
-      {/* Toast messages container (only in this component) */}
       <ToastContainer
         position="top-right"
         autoClose={1500}
@@ -84,10 +93,18 @@ const Step1 = () => {
         <li>
           In the <strong>Trusted entity type</strong> section, select{" "}
           <strong>Custom trust policy</strong>. Paste the following policy:
-          <div className="code-block-wrapper">
+          <div
+            className="code-block-wrapper"
+            onClick={handlePolicyCopy}
+            title="Click to copy policy"
+            style={{ cursor: "pointer" }}
+          >
             <button
               className="copy-btn"
-              onClick={handlePolicyCopy}
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePolicyCopy();
+              }}
               title="Copy to clipboard"
             >
               <FiCopy />
@@ -109,11 +126,19 @@ const Step1 = () => {
         <li>
           In the <strong>Role name</strong> field, enter the below-mentioned
           role name, and click on <strong>Create Role</strong> -
-          <div className="role-copy-inline">
+          <div
+            className="role-copy-inline"
+            onClick={handleRoleNameCopy}
+            title="Click to copy role name"
+            style={{ cursor: "pointer" }}
+          >
             <code className="role-code">CK-Tuner-Role-dev2</code>
             <button
               className="copy-btn-inline"
-              onClick={handleRoleNameCopy}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRoleNameCopy();
+              }}
               title="Copy Role Name"
             >
               <FiCopy />
@@ -141,8 +166,9 @@ const Step1 = () => {
               value={roleArn}
               onChange={(e) => setRoleArn(e.target.value)}
               placeholder="Enter the IAM Role ARN here"
+              
             />
-
+            
             <input
               id="accountId"
               className="arn-input"
@@ -159,6 +185,21 @@ const Step1 = () => {
               onChange={(e) => setAccountName(e.target.value)}
               placeholder="Enter the Account Name here"
             />
+          </div>
+          <div className="onboarding-buttons">
+            <div /> {/* Empty placeholder for alignment */}
+            <button
+              className="next-btn"
+              onClick={() => {
+                if (validateInputs()) {
+                  setStep(2);
+                } else {
+                  toast.error("Please fill in all required fields");
+                }
+              }}
+            >
+              Next - Add Customer Managed Policies
+            </button>
           </div>
         </li>
       </ol>

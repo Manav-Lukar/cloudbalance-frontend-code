@@ -9,6 +9,7 @@ import ProtectedRoute from "./components/routes/ProtectedRoute"; // ← Import t
 import OnboardingFlowPageTwo from "./components/OnboardingFlow/step2";
 
 function App() {
+  
   return (
     <Router>
       <Routes>

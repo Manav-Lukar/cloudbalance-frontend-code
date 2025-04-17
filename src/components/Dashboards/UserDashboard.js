@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import "./UserDashboard.css";
 import loginIcon from "../../assets/Cloudkeeper_New.svg";
 import logOutIcon from "../../assets/logout.png";
 import userIcon from "../../assets/user icon.png";
-import editIcon from "../../assets/pencil.svg"
+import editIcon from "../../assets/pencil.svg";
 import AddUserPage from "../AddUser/AddUserPage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPencil } from "@fortawesome/free-solid-svg-icons";
@@ -231,7 +232,13 @@ const UserDashboard = () => {
       {/* Navbar */}
       <div className="navbar">
         <h2>
-          <img src={loginIcon} alt="Cloudkeeper logo" />
+          <Link to="/user-dashboard">
+            <img
+              src={loginIcon}
+              alt="Cloudkeeper logo"
+              className="clickable-logo"
+            />
+          </Link>{" "}
         </h2>
 
         <div className="navbar-right">

@@ -11,7 +11,6 @@ import reportDelivery from "../../assets/report_delivery.png";
 import "./onboardingflow.css";
 import { useNavigate } from "react-router-dom";
 
-
 const trustPolicyFour = {
   Version: "2012-10-17",
   Statement: [
@@ -67,7 +66,7 @@ const trustPolicyFour = {
   ],
 };
 
-const Step3 = () => {
+const Step3 = ({setStep}) => {
   const navigate = useNavigate();
 
   const handlePolicyCopy = (policy) => {
@@ -80,17 +79,21 @@ const Step3 = () => {
     toast.success("Data Copied!");
   };
 
-  const handleNext = () => {
-    navigate("/onboarding/customer-managed-policies");
-  };
-
   const renderCodeBlock = (policy) => (
     <div
       className="code-block-wrapper"
       onClick={() => handlePolicyCopy(policy)}
       title="Click to copy"
+      style={{ cursor: "pointer" }}
     >
-      <button className="copy-btn" title="Copy to clipboard">
+      <button
+        className="copy-btn"
+        title="Copy to clipboard"
+        onClick={(e) => {
+          e.stopPropagation();
+          handlePolicyCopy(policy);
+        }}
+      >
         <FiCopy />
       </button>
       <pre className="code-block">{JSON.stringify(policy, null, 2)}</pre>
@@ -102,9 +105,17 @@ const Step3 = () => {
       className="role-copy-inline"
       onClick={() => handleRoleNameCopy(name)}
       title="Click to copy"
+      style={{ cursor: "pointer" }}
     >
       <code className="role-code">{name}</code>
-      <button className="copy-btn-inline">
+      <button
+        className="copy-btn-inline"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleRoleNameCopy(name);
+        }}
+        title="Copy"
+      >
         <FiCopy />
       </button>
     </div>
@@ -172,7 +183,7 @@ const Step3 = () => {
 
         <li>
           In the Delivery options section, enter the below-mentioned Report path
-          prefix -{renderRoleName("275595855473")}
+          prefix –{renderRoleName("275595855473")}
           <span>
             Additionally, ensure that the following checks are in place
             <div>
@@ -201,10 +212,19 @@ const Step3 = () => {
         </li>
 
         <li>
-          Click on <strong>Next</strong>. Now, review the configuration of the Cost and Usage
-          Report. Once satisfied, click on <strong>Create Report</strong>
+          Click on <strong>Next</strong>. Now, review the configuration of the
+          Cost and Usage Report. Once satisfied, click on{" "}
+          <strong>Create Report</strong>
         </li>
       </ol>
+      <div className="onboarding-buttons">
+        <button className="cancel-btn" onClick={() => setStep(2)}>
+          Back
+        </button>
+        <button className="next-btn" onClick={() => setStep(4)}>
+          Submit
+        </button>
+      </div>
     </div>
   );
 };
