@@ -54,6 +54,7 @@ const UserDashboard = () => {
   const role = localStorage.getItem("role");
   const firstName = localStorage.getItem("firstName");
   const email = localStorage.getItem("email");
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("isAuthenticated");
@@ -64,9 +65,31 @@ const UserDashboard = () => {
 
   const { users, loading } = useFetchUsers(role, selectedDashboard);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/");
+  const handleLogout = async () => {
+    console.log("Logout button clicked"); // <== Add this
+
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await fetch("http://localhost:8080/auth/logout", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        console.log("Logout successful");
+      } else {
+        console.warn("Logout failed, but proceeding to clear localStorage.");
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      localStorage.clear();
+      navigate("/"); // Redirect to login page
+    }
   };
 
   const handleEditClick = (userId) => {

@@ -664,14 +664,6 @@ const Step2 = ({ setStep }) => {
           {renderRoleName("S3CrossAccountReplication")}
         </li>
       </ol>
-      <div className="onboarding-buttons">
-        <button className="cancel-btn" onClick={() => setStep(1)}>
-          Back
-        </button>
-        <button className="next-btn" onClick={() => setStep(3)}>
-          Create CUR
-        </button>
-      </div>
     </div>
   );
 };

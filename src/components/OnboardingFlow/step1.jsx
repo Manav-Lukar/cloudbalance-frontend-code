@@ -32,11 +32,16 @@ const trustPolicy = {
   ],
 };
 
-const Step1 = ({ setStep }) => {
+const Step1 = ({
+  setStep,
+  roleArn,
+  setRoleArn,
+  accountId,
+  setAccountId,
+  accountName,
+  setAccountName,
+}) => {
   const navigate = useNavigate();
-  const [roleArn, setRoleArn] = useState("");
-  const [accountId, setAccountId] = useState("");
-  const [accountName, setAccountName] = useState("");
   const [errors, setErrors] = useState({});
 
   const handlePolicyCopy = () => {
@@ -49,10 +54,6 @@ const Step1 = ({ setStep }) => {
     toast.success("Data copied!");
   };
 
-  const handleNext = () => {
-    navigate("/onboarding/customer-managed-policies");
-  };
-
   const validateInputs = () => {
     const newErrors = {};
     if (!roleArn.trim()) newErrors.roleArn = "Role ARN is required";
@@ -60,6 +61,12 @@ const Step1 = ({ setStep }) => {
     if (!accountName.trim()) newErrors.accountName = "Account Name is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = () => {
+    if (validateInputs()) {
+      navigate("/onboarding/customer-managed-policies");
+    }
   };
 
   return (
@@ -116,16 +123,15 @@ const Step1 = ({ setStep }) => {
         </li>
 
         <li>
-          Click on <strong>Next</strong> to go to the{" "}
-          <i>Add permissions page</i>. We would not be adding any permissions
-          for now because the permission policy content will be dependent on the{" "}
-          <br /> AWS Account ID retrieved from the IAM Role. Click on{" "}
-          <strong>Next</strong>.
+          Click on <strong>Next</strong> to go to the <i>Add permissions page</i>. 
+          We would not be adding any permissions for now because the permission policy 
+          content will be dependent on the <br /> AWS Account ID retrieved from the IAM Role. 
+          Click on <strong>Next</strong>.
         </li>
 
         <li>
-          In the <strong>Role name</strong> field, enter the below-mentioned
-          role name, and click on <strong>Create Role</strong> -
+          In the <strong>Role name</strong> field, enter the below-mentioned role name, 
+          and click on <strong>Create Role</strong> -
           <div
             className="role-copy-inline"
             onClick={handleRoleNameCopy}
@@ -166,9 +172,7 @@ const Step1 = ({ setStep }) => {
               value={roleArn}
               onChange={(e) => setRoleArn(e.target.value)}
               placeholder="Enter the IAM Role ARN here"
-              
             />
-            
             <input
               id="accountId"
               className="arn-input"
@@ -186,23 +190,24 @@ const Step1 = ({ setStep }) => {
               placeholder="Enter the Account Name here"
             />
           </div>
-          <div className="onboarding-buttons">
-            <div /> {/* Empty placeholder for alignment */}
-            <button
-              className="next-btn"
-              onClick={() => {
-                if (validateInputs()) {
-                  setStep(2);
-                } else {
-                  toast.error("Please fill in all required fields");
-                }
-              }}
-            >
-              Next - Add Customer Managed Policies
-            </button>
-          </div>
+
+          {/* Display error messages if any */}
+          {(errors.roleArn || errors.accountId || errors.accountName) && (
+            <ul style={{ color: "red", marginTop: "8px", paddingLeft: "20px" }}>
+              {errors.roleArn && <li>{errors.roleArn}</li>}
+              {errors.accountId && <li>{errors.accountId}</li>}
+              {errors.accountName && <li>{errors.accountName}</li>}
+            </ul>
+          )}
         </li>
       </ol>
+
+      <div className="onboarding-buttons">
+        <button className="cancel-btn" onClick={() => setStep(0)}>
+          Back
+        </button>
+      
+      </div>
     </div>
   );
 };

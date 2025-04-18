@@ -217,14 +217,6 @@ const Step3 = ({setStep}) => {
           <strong>Create Report</strong>
         </li>
       </ol>
-      <div className="onboarding-buttons">
-        <button className="cancel-btn" onClick={() => setStep(2)}>
-          Back
-        </button>
-        <button className="next-btn" onClick={() => setStep(4)}>
-          Submit
-        </button>
-      </div>
     </div>
   );
 };
