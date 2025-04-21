@@ -1,129 +1,159 @@
-.container {
-    display: flex;
-    flex-direction: column;
-    margin: auto;
-    width: 600px;
-    margin-top: 150px;
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+/* Global Styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
+/* Login Page Wrapper */
+.login-page-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f3f4f6; /* Optional background */
+  padding: 20px;
+  overflow: hidden;  /* Prevent scroll */
+}
+
+/* Container Styling */
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 600px;  /* Max width of container */
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  overflow: hidden;  /* Prevent content overflow */
+}
+
+/* Header Styling */
 .header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 9px;
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
 }
 
 .login-icon {
-    width: 200px;  /* Adjust size as needed */
-    height: 80px;
+  width: 200px;  /* Adjust size as needed */
+  height: 80px;
 }
 
+/* Inputs Styling */
 .inputs {
-    margin-top: 40px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .input-group {
-    display: flex;
-    flex-direction: column;
-    width: 96%;
+  display: flex;
+  flex-direction: column;
+  width: 96%;
 }
 
 .input-group label {
-    font-size: 18px;
-    color: #555;
-    margin-bottom: 5px; /* Moves label above the input */
-    font-weight: 400;
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 5px; /* Moves label above the input */
+  font-weight: 400;
 }
 
 .input-group input {
-    width: 100%;
-    height: 36px;
-    background: #fff;
-    border-radius: 6px;
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    outline: none;
-    color: #333;
-    cursor:pointer;
+  width: 100%;
+  height: 50px;
+  background: #fff;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  outline: none;
+  color: #333;
+  cursor: pointer;
 }
 
 .input-group input:focus {
-    border-color: #3c009d;
+  border-color: #3c009d;
 }
 
 .input-error {
-    border: 2px solid red;
-    outline: none;
-  }
-  
-/* Buttons */
+  border: 2px solid red;
+  outline: none;
+}
+
+.error-text {
+  color: red;
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+/* Buttons Styling */
 .submit-container {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    width: 100%;
-    margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+  margin-top: 40px;
 }
 
 .submit {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 50px;
-    color: #fff;
-    background-color: #4CC9FE;
-    border: none;
-    border-radius: 7px;
-    font-size: 18px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: 0.3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 50px;
+  color: #fff;
+  background-color: #4CC9FE;
+  border: none;
+  border-radius: 7px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
 .submit:hover {
-    background-color: #077eb0;
+  background-color: #077eb0;
 }
 
 .gray {
-    background: #EAEAEA;
-    color: #676767;
-    cursor: pointer;
+  background: #EAEAEA;
+  color: #676767;
+  cursor: pointer;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .container {
-        width: 90%;
-        margin-top: 50px;
-    }
+  .container {
+    width: 90%;
+    max-width: 500px;
+    margin-top: 20px;
+  }
 
-    .input-group {
-        width: 100%;
-    }
+  .input-group {
+    width: 100%;
+  }
 
-    .submit-container {
-        flex-direction: column;
-        align-items: center;
-    }
+  .submit-container {
+    flex-direction: column;
+    align-items: center;
+  }
 
-    .submit {
-        width: 100%;
-    }
+  .submit {
+    width: 100%;
+  }
 }
 
+/* Terms Section Styling */
 .terms {
-    font-size: 18px;
-    color: #110e0e;
-    text-align: center;
-    margin-top: 30px;
+  font-size: 18px;
+  color: #110e0e;
+  text-align: center;
+  margin-top: 30px;
 }

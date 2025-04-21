@@ -203,9 +203,6 @@ const Step1 = ({
       </ol>
 
       <div className="onboarding-buttons">
-        <button className="cancel-btn" onClick={() => setStep(0)}>
-          Back
-        </button>
       
       </div>
     </div>

@@ -1,17 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Step1 from "./step1";
 import Step2 from "./step2";
 import Step3 from "./step3";
-import Step4 from "./Step4"; // ✅ New thank you step
+import Step4 from "./Step4"; // ✅ Thank you step
 import "../../components/OnboardingFlow/onboardingflow.css";
 
 const OnboardingFlow = () => {
   const [step, setStep] = useState(1);
   const [roleArn, setRoleArn] = useState("");
   const [accountId, setAccountId] = useState("");
-  const [accountName, setAccountName] = useState("");  
+  const [accountName, setAccountName] = useState("");
   const [policyCopySuccess, setPolicyCopySuccess] = useState(false);
   const [roleNameCopySuccess, setRoleNameCopySuccess] = useState(false);
+  const onboardingContainerRef = useRef(null);
+
+  useEffect(() => {
+    if (onboardingContainerRef.current) {
+      onboardingContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [step]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 1, behavior: "smooth" });
+  }, [step]);
 
   const handlePolicyCopy = () => {
     navigator.clipboard.writeText("...trust policy...");
@@ -26,7 +37,7 @@ const OnboardingFlow = () => {
   };
 
   const handleSubmit = async () => {
-    const token = localStorage.getItem("token"); // or wherever you store your token
+    const token = localStorage.getItem("token");
 
     const requestBody = {
       accountId,
@@ -36,21 +47,24 @@ const OnboardingFlow = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:8080/admin/add-cloud-accounts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const response = await fetch(
+        "http://localhost:8080/admin/add-cloud-accounts",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("API request failed");
       }
 
       console.log("Cloud account created successfully");
-      setStep(4); // Move to Thank You page
+      setStep(4); // ✅ Go to thank-you page
     } catch (error) {
       console.error("Error creating cloud account:", error);
       alert("Failed to create cloud account. Please try again.");
@@ -105,20 +119,18 @@ const OnboardingFlow = () => {
   };
 
   return (
-    <div className="onboarding-container">
+    <div className="onboarding-container" ref={onboardingContainerRef}>
       {renderStep()}
 
       {step < 4 && (
         <div className="onboarding-buttons">
-          <div>
-            {step > 1 ? (
-              <button className="cancel-btn" onClick={() => setStep(step - 1)}>
-                Back
-              </button>
-            ) : (
-              <div /> // placeholder
-            )}
-          </div>
+          <button
+            className={`cancel-btn ${step === 1 ? "invisible-btn" : ""}`}
+            onClick={() => setStep(step - 1)}
+            disabled={step === 1}
+          >
+            Back
+          </button>
 
           <button
             className="next-btn"
@@ -126,7 +138,7 @@ const OnboardingFlow = () => {
               if (step < 3) {
                 setStep(step + 1);
               } else if (step === 3) {
-                handleSubmit(); // trigger API
+                handleSubmit();
               }
             }}
           >

@@ -9,6 +9,11 @@
     max-width: 100%;
     margin: 0 auto; /* center the form */
 }
+.add-user-form h1 {
+    margin-bottom: 20px;
+    font-size: 36px;
+    color: #333;
+}
 
 .add-user-form h2 {
     margin-bottom: 20px;

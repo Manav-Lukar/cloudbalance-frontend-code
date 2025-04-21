@@ -13,29 +13,30 @@
   --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-/* Overall layout */
+/* Global Layout */
 .dashboard-layout {
   display: flex;
   flex-direction: column;
   height: 100vh;
   font-family: Arial, sans-serif;
   background-color: var(--bg-main);
+  overflow: hidden; /* Prevent overall scrolling */
 }
 
 /* Navbar */
 .navbar {
+  background-color: #f9f9f9;
+  padding: 2px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--bg-navbar);
-  padding: 0.1rem 1rem;
 }
 
 .navbar-right,
 .user-info {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .user-info {
@@ -43,8 +44,8 @@
 }
 
 .user-icon {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -53,21 +54,21 @@
   font-size: 1rem;
   font-weight: 600;
   color: var(--text-main);
-  text-transform: capitalize;
 }
 
+/* Buttons */
 .logout-btn {
-  background-color: var(--text-white);
-  color: var(--text-main);
+  background-color: transparent;
   border: none;
-  padding: 10px 15px;
-  cursor: pointer;
-  border-radius: 6px;
-  font-weight: bold;
+  color: var(--text-main);
   font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 10px 15px;
+  border-radius: 6px;
   transition: background-color 0.3s ease;
 }
 
@@ -75,54 +76,83 @@
   background-color: #e7e9ea;
 }
 
-/* Sidebar + Main section */
+/* Dashboard Content */
 .dashboard-content {
   display: flex;
-  flex: 1;
-  overflow: hidden;
+  height: calc(100vh - 60px); /* Subtract navbar height */
+  transition: all 0.3s ease;
+  overflow: hidden; /* Prevent scrolling */
 }
 
 /* Sidebar */
 .sidebar {
-  width: 230px;
-  padding: 2rem;
-  background-color: var(--bg-card);
-  /* border-radius: 15px 15px 0 10px; */
-  border-right: 1px solid var(--border-light);
-  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.03);
+  background-color: #f3f3f3;
+  width: 220px;
+  transition: width 0.3s ease;
+  position: relative;
+  padding: 2rem 1rem 1rem 1rem;
+  border-right: 1px solid #dcdcdc;
+  height: 100%; /* Ensure sidebar fills the full height */
 }
 
-.sidebar ul {
+.sidebar.collapsed {
+  width: 60px;
+}
+
+.sidebar-toggle {
+  position: absolute;
+  top: 10px;
+  right: -15px;
+  background-color: #e0e0e0;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-menu {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.sidebar li {
-  padding: 15px 0;
+.sidebar-menu li {
+  font-size: 16px;
+  padding: 10px 20px;
   color: var(--text-main);
   font-weight: 900;
-  font-size: 16px;
   cursor: pointer;
-  transition: color 0.3s ease;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
 }
 
-.sidebar li:hover {
-  color: #0b93cd;
-  /* background-color: #0b93cd;
-  border-radius: 10px;
-  padding: 15px; */
+.sidebar-menu li:hover {
+  background-color: #e0e7ef;
 }
 
-/* Main content */
+/* Hide dashboard labels in collapsed state */
+.sidebar.collapsed .sidebar-menu li {
+  visibility: hidden; /* Hide full label */
+}
+
+.sidebar.collapsed .sidebar-menu li:first-child {
+  visibility: visible; /* Show the toggle icon */
+}
+
+/* Main Content */
 .main-content {
-  flex: 1;
-  padding: 2rem;
+  flex-grow: 1;
+  padding: 5px;
   background-color: var(--bg-main);
-  overflow-y: auto;
+  overflow-y: auto; /* Allows scrolling only within the main content */
 }
 
-/* Dashboard card */
+/* Cards */
 .dashboard-card {
   background-color: var(--bg-card);
   padding: 20px;
@@ -130,16 +160,19 @@
   box-shadow: var(--shadow-soft);
   max-width: 800px;
   margin-bottom: 30px;
+  overflow: hidden; /* Prevent card overflow */
 }
 
 .dashboard-title {
   color: var(--text-main);
   margin-bottom: 20px;
+  margin-left: 30px;
 }
 
-/* Table styles */
+/* Table */
 .user-table {
   width: 100%;
+  height: 50%;
   border-collapse: collapse;
   background-color: var(--bg-card);
   box-shadow: var(--shadow-soft);
@@ -197,88 +230,66 @@
   color: var(--text-main);
 }
 
-/* Buttons */
-.add-user-btn {
+/* Action Buttons */
+.add-user-btn,
+.back-btn {
   background-color: var(--bg-btn-primary);
-  font-size: 14px;
   color: var(--text-white);
   padding: 10px 15px;
+  /* margin-left: 30px; */
   border: none;
   border-radius: 6px;
+  font-size: 14px;
   cursor: pointer;
-  /* font-weight: bolder; */
-  margin-left: auto;
-  margin-bottom: 30px;
   transition: background-color 0.3s ease;
 }
 
-.add-user-btn:hover {
+.add-user-btn {
+  margin-left: auto;
+  margin-bottom: 30px;
+  margin-left: 20px;
+
+}
+
+.add-user-btn:hover,
+.back-btn:hover {
   background-color: var(--bg-btn-hover);
 }
+
+.back-btn {
+  margin-top: 30px;
+  margin-left: 10px;
+}
+
 .edit-btn {
-  background: none;            /* No background */
-  color: inherit;              /* Inherit text color (or set a specific one if needed) */
-  border: none;                /* No border */
-  border-radius: 4px;          /* Optional rounding */
+  background: none;
+  border: none;
+  color: inherit;
+  border-radius: 4px;
   cursor: pointer;
-  padding: 6px 1px;           /* Optional spacing */
+  padding: 6px 1px;
   transition: transform 0.3s ease;
 }
 
 .edit-btn:hover {
-  transform: scale(1.05);      /* Subtle hover effect */
+  transform: scale(1.05);
 }
 
 .edit-btn:disabled {
-  background: none;
   color: #b13131;
   cursor: not-allowed;
-  opacity: 0.5;                /* Optional visual cue for disabled */
+  opacity: 0.5;
 }
 
-
-/* Header */
+/* Dashboard Header */
 .dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-/* Back button */
-.back-btn {
-  background-color: var(--bg-btn-primary);
-  color: var(--text-white);
-  padding: 10px 15px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bolder;
-  font-size: 14px;
-  margin-bottom: 30px;
-  transition: background-color 0.3s ease;
-}
-
-.back-btn:hover {
-  background-color: var(--bg-btn-hover);
-}
-.custom-sidebar {
-  background-color: #f0f4f8;
-  height: 100vh;
-  min-width: 220px;
-  padding-top: 20px;
-  border-right: 1px solid #dcdcdc;
-}
-
-.custom-sidebar .pro-menu-item {
-  font-size: 16px;
-  padding: 10px 20px;
-  cursor: pointer;
-}
-
-.custom-sidebar .pro-menu-item:hover {
-  background-color: #e0e7ef;
-}
-
+/* Clickable Logo */
 .clickable-logo {
+  height: 40px;
   cursor: pointer;
 }

@@ -1,14 +1,11 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./UserDashboard.css";
 import loginIcon from "../../assets/Cloudkeeper_New.svg";
 import logOutIcon from "../../assets/logout.png";
 import userIcon from "../../assets/user icon.png";
 import editIcon from "../../assets/pencil.svg";
 import AddUserPage from "../AddUser/AddUserPage";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPencil } from "@fortawesome/free-solid-svg-icons";
 import OnboardingFlow from "../OnboardingFlow/OnboardingFlow";
 
 // Custom hook for fetching users
@@ -43,18 +40,17 @@ const useFetchUsers = (role, selectedDashboard) => {
 const UserDashboard = () => {
   const navigate = useNavigate();
 
-  // Load dashboard from localStorage or default to "User Management"
   const [selectedDashboard, setSelectedDashboard] = useState(() => {
     return localStorage.getItem("selectedDashboard") || "User Management";
   });
   const [currentUserPage, setCurrentUserPage] = useState(0);
   const [showAddUser, setShowAddUser] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const usersPerPage = 9;
   const role = localStorage.getItem("role");
   const firstName = localStorage.getItem("firstName");
   const email = localStorage.getItem("email");
-  const token = localStorage.getItem("token");
 
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("isAuthenticated");
@@ -66,29 +62,20 @@ const UserDashboard = () => {
   const { users, loading } = useFetchUsers(role, selectedDashboard);
 
   const handleLogout = async () => {
-    console.log("Logout button clicked"); // <== Add this
-
     const token = localStorage.getItem("token");
-
     try {
-      const response = await fetch("http://localhost:8080/auth/logout", {
+      await fetch("http://localhost:8080/auth/logout", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
-
-      if (response.ok) {
-        console.log("Logout successful");
-      } else {
-        console.warn("Logout failed, but proceeding to clear localStorage.");
-      }
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
       localStorage.clear();
-      navigate("/"); // Redirect to login page
+      navigate("/");
     }
   };
 
@@ -100,10 +87,13 @@ const UserDashboard = () => {
     setCurrentUserPage((prev) => prev + direction);
   }, []);
 
-  // Function to change dashboard and save to localStorage
   const handleDashboardChange = (dashboard) => {
     setSelectedDashboard(dashboard);
     localStorage.setItem("selectedDashboard", dashboard);
+  };
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed((prev) => !prev);
   };
 
   const renderDashboardContent = useMemo(() => {
@@ -127,7 +117,7 @@ const UserDashboard = () => {
 
           {showAddUser ? (
             <button className="back-btn" onClick={() => setShowAddUser(false)}>
-              ⬅ Back to Dashboard
+              Back to Dashboard
             </button>
           ) : (
             role === "ADMIN" && (
@@ -177,7 +167,6 @@ const UserDashboard = () => {
                               className="edit-btn"
                             >
                               <img src={editIcon} alt="edit-icon" />
-                              {/* <FontAwesomeIcon icon={faPencil} /> */}
                             </button>
                           </td>
                         </tr>
@@ -277,12 +266,19 @@ const UserDashboard = () => {
       </div>
 
       {/* Sidebar + Main Content */}
-      <div className="dashboard-content">
-        <div className="sidebar">
-          <ul>
+      <div
+        className={`dashboard-content ${
+          isSidebarCollapsed ? "collapsed" : ""
+        }`}
+      >
+        <div className={`sidebar ${isSidebarCollapsed ? "collapsed" : ""}`}>
+          <div className="sidebar-toggle" onClick={toggleSidebar}>
+            {isSidebarCollapsed ? "☰" : "☰"}
+          </div>
+          <ul className="sidebar-menu">
             {sidebarMenu.map((item, index) => (
-              <li key={index} onClick={item.action}>
-                {item.label}
+              <li key={index} onClick={item.action} title={item.label}>
+                {isSidebarCollapsed ? null : item.label}
               </li>
             ))}
           </ul>
