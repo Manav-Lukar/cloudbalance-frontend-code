@@ -4,6 +4,7 @@ import Step2 from "./step2";
 import Step3 from "./step3";
 import Step4 from "./Step4"; // ✅ Thank you step
 import "../../components/OnboardingFlow/onboardingflow.css";
+import { Outlet } from "react-router-dom";
 
 const OnboardingFlow = () => {
   const [step, setStep] = useState(1);
@@ -43,7 +44,6 @@ const OnboardingFlow = () => {
       accountId,
       arnNumber: roleArn,
       accountName,
-      provider: "AWS",
     };
 
     try {
@@ -119,7 +119,9 @@ const OnboardingFlow = () => {
   };
 
   return (
+    
     <div className="onboarding-container" ref={onboardingContainerRef}>
+
       {renderStep()}
 
       {step < 4 && (
@@ -146,6 +148,8 @@ const OnboardingFlow = () => {
           </button>
         </div>
       )}
+          <Outlet/>
+
     </div>
   );
 };

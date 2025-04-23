@@ -1,0 +1,106 @@
+.aws-service-dashboard {
+  padding: 2rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fc;
+  min-height: 100vh;
+}
+
+.aws-service-dashboard h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: #2c3e50;
+}
+
+select {
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  outline: none;
+  width: 300px;
+  background-color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.service-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.service-buttons button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background-color: #ecf0f1;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.service-buttons button:hover {
+  background-color: #dcdde1;
+}
+
+.service-buttons button.active {
+  background-color: #0056b3;
+  color: white;
+  font-weight: bold;
+}
+
+.service-buttons button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ec2-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 12px; 
+  background-color: transparent;
+}
+
+.ec2-table th,
+.ec2-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  font-size: 0.95rem;
+
+}
+
+.asg-rolearn {
+    word-break: break-word;
+    white-space: normal;
+    font-size: 0.85rem;
+    max-width: 300px;
+    line-height: 1.4;
+    padding: 0.5rem;
+    border-radius: 4px;
+  
+  
+}
+
+.ec2-table th {
+  background-color: #f0f2f5;
+  color: #333;
+}
+
+.ec2-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+@media (max-width: 768px) {
+  select {
+    width: 100%;
+  }
+
+  .service-buttons {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ec2-table th,
+  .ec2-table td {
+    padding: 0.75rem;
+  }
+}

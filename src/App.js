@@ -4,12 +4,10 @@ import Login from "./components/login-page/Login";
 import UserDashboard from "./components/Dashboards/UserDashboard";
 import ErrorPage from "./components/ErroPage/ErrorPage";
 import OnboardingFlow from "./components/OnboardingFlow/OnboardingFlow";
-import CustomerManagedPolicies from "./components/OnboardingFlow/step2";
-import ProtectedRoute from "./components/routes/ProtectedRoute"; // ← Import this
 import OnboardingFlowPageTwo from "./components/OnboardingFlow/step2";
+import ProtectedRoute from "./components/routes/ProtectedRoute";
 
 function App() {
-  
   return (
     <Router>
       <Routes>
@@ -25,23 +23,25 @@ function App() {
           }
         />
 
+        {/* ✅ OnboardingFlow as parent route */}
         <Route
-          path="/onboarding"
+          path="/onboarding-container"
           element={
             <ProtectedRoute>
               <OnboardingFlow />
             </ProtectedRoute>
           }
-        >
-          <Route
-            path="customer-managed-policies"
-            element={
-              <ProtectedRoute>
-                <OnboardingFlowPageTwo />
-              </ProtectedRoute>
-            }
-          />
-        </Route>
+        />
+
+        {/* ✅ Subroute handled separately */}
+        <Route
+          path="/onboarding/customer-managed-policies"
+          element={
+            <ProtectedRoute>
+              <OnboardingFlowPageTwo />
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="*" element={<ErrorPage />} />
       </Routes>

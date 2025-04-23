@@ -50,13 +50,14 @@ const Login = () => {
       const data = await response.json();
       const token = data.token;
 
-      localStorage.setItem("userId", data.userId);
+      localStorage.setItem("userId", data.id);
       localStorage.setItem("firstName", data.firstName);
       localStorage.setItem("lastName", data.lastName);
       localStorage.setItem("email", data.email);
       localStorage.setItem("role", data.role);
       localStorage.setItem("isAuthenticated", "true");
       localStorage.setItem("token", token);
+      
 
       try {
         const lastLoginRes = await fetch("http://localhost:8080/login/authenticate", {

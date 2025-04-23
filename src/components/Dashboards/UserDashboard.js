@@ -7,6 +7,8 @@ import userIcon from "../../assets/user icon.png";
 import editIcon from "../../assets/pencil.svg";
 import AddUserPage from "../AddUser/AddUserPage";
 import OnboardingFlow from "../OnboardingFlow/OnboardingFlow";
+import AwsServicesDashboard from "../AWS_Service/AwsServicesDashboard";
+
 
 // Custom hook for fetching users
 const useFetchUsers = (role, selectedDashboard) => {
@@ -197,6 +199,10 @@ const UserDashboard = () => {
         </>
       );
     }
+    if (selectedDashboard === "AWS Services") {
+      return <AwsServicesDashboard />;
+    }
+    
 
     if (selectedDashboard === "Onboarding Dashboard") {
       return <OnboardingFlow />;
