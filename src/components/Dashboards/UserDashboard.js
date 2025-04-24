@@ -8,6 +8,8 @@ import editIcon from "../../assets/pencil.svg";
 import AddUserPage from "../AddUser/AddUserPage";
 import OnboardingFlow from "../OnboardingFlow/OnboardingFlow";
 import AwsServicesDashboard from "../AWS_Service/AwsServicesDashboard";
+import CostExplorer from "../Cost explorer/CostExplorer";
+
 
 // Custom hook for fetching users
 const useFetchUsers = (role, selectedDashboard) => {
@@ -208,6 +210,12 @@ const UserDashboard = () => {
     if (selectedDashboard === "Onboarding Dashboard") {
       return <OnboardingFlow />;
     }
+    if (selectedDashboard === "Cost Explorer") {
+      return <CostExplorer />;
+    }
+    
+    return <h1>Welcome to {selectedDashboard}</h1>;
+    
 
     return <h1>Welcome to {selectedDashboard}</h1>;
   }, [selectedDashboard, role, users, currentUserPage, loading, showAddUser]);
