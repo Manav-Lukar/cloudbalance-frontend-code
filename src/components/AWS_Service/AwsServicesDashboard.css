@@ -30,7 +30,7 @@ select {
 }
 
 .service-buttons button {
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 3rem;
   border: none;
   background-color: #ecf0f1;
   border-radius: 6px;

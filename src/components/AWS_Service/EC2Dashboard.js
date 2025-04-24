@@ -1,39 +1,29 @@
-import React from "react";
+import React from 'react';
+import ResourceTable from './ResourceTable';
 
 const EC2Dashboard = ({ loading, ec2Data }) => {
+  const columns = [
+    {
+      header: 'Instance ID',
+      key: 'instanceId',
+      render: (item) => (
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          {item.instanceId}
+        </div>
+      ),
+    },
+    { header: 'Name', key: 'name' },
+    { header: 'Region', key: 'region' },
+    { header: 'State', key: 'state' },
+  ];
+
   return (
-    <>
-      {loading ? (
-        <p>Loading EC2 data...</p>
-      ) : (
-        <table className="ec2-table">
-          <thead>
-            <tr>
-              <th>Instance ID</th>
-              <th>Name</th>
-              <th>Region</th>
-              <th>State</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ec2Data.length === 0 ? (
-              <tr>
-                <td colSpan="4">No EC2 instances found.</td>
-              </tr>
-            ) : (
-              ec2Data.map((instance, index) => (
-                <tr key={index}>
-                  <td>{instance.instanceId}</td>
-                  <td>{instance.name}</td>
-                  <td>{instance.region}</td>
-                  <td>{instance.state}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      )}
-    </>
+    <ResourceTable
+      loading={loading}
+      columns={columns}
+      data={ec2Data}
+      emptyMessage="No EC2 instances found."
+    />
   );
 };
 

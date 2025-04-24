@@ -1,33 +1,32 @@
-import React, { useState } from "react";
-import { FiCopy } from "react-icons/fi";
-import role from "../../assets/role.png"; // adjust path as needed
-import "../../components/OnboardingFlow/onboardingflow.css";
-import { useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import React, { useState } from 'react';
+import { FiCopy } from 'react-icons/fi';
+import roleImage from '../../assets/role.png'; // adjust path as needed
+import './onboardingflow.css';
+import { useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const trustPolicy = {
-  Version: "2012-10-17",
+  Version: '2012-10-17',
   Statement: [
     {
-      Effect: "Allow",
+      Effect: 'Allow',
       Principal: {
-        AWS: "arn:aws:iam::951485052809:root",
+        AWS: 'arn:aws:iam::951485052809:root',
       },
-      Action: "sts:AssumeRole",
+      Action: 'sts:AssumeRole',
       Condition: {
         StringEquals: {
-          "sts:ExternalId":
-            "Um9oaXRDS19ERUZBVUxUZDIzOTJkZTgtN2E0OS00NWQ3LTg3MzItODkyM2ExZTIzMjQw",
+          'sts:ExternalId': 'Um9oaXRDS19ERUZBVUxUZDIzOTJkZTgtN2E0OS00NWQ3LTg3MzItODkyM2ExZTIzMjQw',
         },
       },
     },
     {
-      Effect: "Allow",
+      Effect: 'Allow',
       Principal: {
-        Service: "s3.amazonaws.com",
+        Service: 's3.amazonaws.com',
       },
-      Action: "sts:AssumeRole",
+      Action: 'sts:AssumeRole',
     },
   ],
 };
@@ -44,28 +43,31 @@ const Step1 = ({
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
 
+  const role = localStorage.getItem('role');
+  const normalizedRole = role?.toUpperCase();
+
   const handlePolicyCopy = () => {
     navigator.clipboard.writeText(JSON.stringify(trustPolicy, null, 2));
-    toast.success("Data copied!");
+    toast.success('Data copied!');
   };
 
   const handleRoleNameCopy = () => {
-    navigator.clipboard.writeText("CK-Tuner-Role-dev2");
-    toast.success("Data copied!");
+    navigator.clipboard.writeText('CK-Tuner-Role-dev2');
+    toast.success('Data copied!');
   };
 
   const validateInputs = () => {
     const newErrors = {};
-    if (!roleArn.trim()) newErrors.roleArn = "Role ARN is required";
-    if (!accountId.trim()) newErrors.accountId = "Account ID is required";
-    if (!accountName.trim()) newErrors.accountName = "Account Name is required";
+    if (!roleArn.trim()) newErrors.roleArn = 'Role ARN is required';
+    if (!accountId.trim()) newErrors.accountId = 'Account ID is required';
+    if (!accountName.trim()) newErrors.accountName = 'Account Name is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleNext = () => {
     if (validateInputs()) {
-      navigate("/onboarding/customer-managed-policies");
+      navigate('/onboarding/customer-managed-policies');
     }
   };
 
@@ -86,7 +88,7 @@ const Step1 = ({
 
       <ol className="onboarding-steps">
         <li>
-          Log into AWS account &{" "}
+          Log into AWS account &{' '}
           <a
             href="https://console.aws.amazon.com/iam/home#/roles"
             target="_blank"
@@ -98,13 +100,13 @@ const Step1 = ({
         </li>
 
         <li>
-          In the <strong>Trusted entity type</strong> section, select{" "}
+          In the <strong>Trusted entity type</strong> section, select{' '}
           <strong>Custom trust policy</strong>. Paste the following policy:
           <div
             className="code-block-wrapper"
             onClick={handlePolicyCopy}
             title="Click to copy policy"
-            style={{ cursor: "pointer" }}
+            style={{ cursor: 'pointer' }}
           >
             <button
               className="copy-btn"
@@ -116,27 +118,24 @@ const Step1 = ({
             >
               <FiCopy />
             </button>
-            <pre className="code-block">
-              {JSON.stringify(trustPolicy, null, 2)}
-            </pre>
+            <pre className="code-block">{JSON.stringify(trustPolicy, null, 2)}</pre>
           </div>
         </li>
 
         <li>
-          Click on <strong>Next</strong> to go to the <i>Add permissions page</i>. 
-          We would not be adding any permissions for now because the permission policy 
-          content will be dependent on the <br /> AWS Account ID retrieved from the IAM Role. 
-          Click on <strong>Next</strong>.
+          Click on <strong>Next</strong> to go to the <i>Add permissions page</i>. We would not be
+          adding any permissions for now because the permission policy content will be dependent on
+          the <br /> AWS Account ID retrieved from the IAM Role. Click on <strong>Next</strong>.
         </li>
 
         <li>
-          In the <strong>Role name</strong> field, enter the below-mentioned role name, 
-          and click on <strong>Create Role</strong> -
+          In the <strong>Role name</strong> field, enter the below-mentioned role name, and click on{' '}
+          <strong>Create Role</strong> -
           <div
             className="role-copy-inline"
             onClick={handleRoleNameCopy}
             title="Click to copy role name"
-            style={{ cursor: "pointer" }}
+            style={{ cursor: 'pointer' }}
           >
             <code className="role-code">CK-Tuner-Role-dev2</code>
             <button
@@ -155,10 +154,9 @@ const Step1 = ({
         <li>
           Go to the created IAM role and copy the <strong>Role ARN</strong>.
           <div className="step-image">
-            <img src={role} alt="Step 5 Screenshot" />
+            <img src={roleImage} alt="Step 5 Screenshot" />
           </div>
         </li>
-
         <li className="step-six">
           <p className="step-heading">Paste the copied Role ARN below -</p>
           <label htmlFor="roleArn" className="input-label">
@@ -172,6 +170,7 @@ const Step1 = ({
               value={roleArn}
               onChange={(e) => setRoleArn(e.target.value)}
               placeholder="Enter the IAM Role ARN here"
+              disabled={normalizedRole === 'READ_ONLY'}
             />
             <input
               id="accountId"
@@ -180,6 +179,7 @@ const Step1 = ({
               value={accountId}
               onChange={(e) => setAccountId(e.target.value)}
               placeholder="Enter the Account ID here"
+              disabled={normalizedRole === 'READ_ONLY'}
             />
             <input
               id="accountName"
@@ -188,12 +188,13 @@ const Step1 = ({
               value={accountName}
               onChange={(e) => setAccountName(e.target.value)}
               placeholder="Enter the Account Name here"
+              disabled={normalizedRole === 'READ_ONLY'}
             />
           </div>
 
           {/* Display error messages if any */}
           {(errors.roleArn || errors.accountId || errors.accountName) && (
-            <ul style={{ color: "red", marginTop: "8px", paddingLeft: "20px" }}>
+            <ul style={{ color: 'red', marginTop: '8px', paddingLeft: '20px' }}>
               {errors.roleArn && <li>{errors.roleArn}</li>}
               {errors.accountId && <li>{errors.accountId}</li>}
               {errors.accountName && <li>{errors.accountName}</li>}
@@ -201,10 +202,6 @@ const Step1 = ({
           )}
         </li>
       </ol>
-
-      <div className="onboarding-buttons">
-      
-      </div>
     </div>
   );
 };

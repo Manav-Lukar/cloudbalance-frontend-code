@@ -1,31 +1,31 @@
-import React, { useEffect, useState } from "react";
-import "../AWS_Service/AwsServicesDashboard.css";
-import EC2Dashboard from "./EC2Dashboard";
-import RDSDashboard from "./RDSDashboard";
-import ASGDashboard from "./ASGDashboard"; // ✅ ASG import
+import React, { useEffect, useState } from 'react';
+import './AwsServicesDashboard.css';
+import EC2Dashboard from './EC2Dashboard';
+import RDSDashboard from './RDSDashboard';
+import ASGDashboard from './ASGDashboard'; // ✅ ASG import
 
 const AwsServicesDashboard = () => {
   const [cloudAccounts, setCloudAccounts] = useState([]);
   const [selectedAccount, setSelectedAccount] = useState(null);
-  const [selectedService, setSelectedService] = useState("EC2");
+  const [selectedService, setSelectedService] = useState('EC2');
   const [ec2Data, setEc2Data] = useState([]);
   const [rdsData, setRdsData] = useState([]);
   const [asgData, setAsgData] = useState([]); // ✅ ASG state
   const [loading, setLoading] = useState(false);
-  const role = localStorage.getItem("role");
-  const token = localStorage.getItem("token");
+  const role = localStorage.getItem('role');
+  const token = localStorage.getItem('token');
 
   // Fetch Cloud Accounts
   useEffect(() => {
     const fetchAccounts = async () => {
       try {
         let response;
-        if (role === "ADMIN" || role === "READ_ONLY") {
-          response = await fetch("http://localhost:8080/admin/cloud-accounts", {
+        if (role === 'ADMIN' || role === 'READ_ONLY') {
+          response = await fetch('http://localhost:8080/admin/cloud-accounts', {
             headers: { Authorization: `Bearer ${token}` },
           });
-        } else if (role === "CUSTOMER") {
-          const userId = localStorage.getItem("userId");
+        } else if (role === 'CUSTOMER') {
+          const userId = localStorage.getItem('userId');
           response = await fetch(`http://localhost:8080/admin/assigned/${userId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -35,10 +35,10 @@ const AwsServicesDashboard = () => {
           const data = await response.json();
           setCloudAccounts(data);
         } else {
-          console.error("Failed to fetch cloud accounts.");
+          console.error('Failed to fetch cloud accounts.');
         }
       } catch (error) {
-        console.error("Error fetching cloud accounts:", error);
+        console.error('Error fetching cloud accounts:', error);
       }
     };
 
@@ -48,7 +48,7 @@ const AwsServicesDashboard = () => {
   // Fetch EC2 Metadata
   useEffect(() => {
     const fetchEC2Data = async () => {
-      if (selectedAccount && selectedService === "EC2") {
+      if (selectedAccount && selectedService === 'EC2') {
         setLoading(true);
         setEc2Data([]);
         try {
@@ -57,14 +57,14 @@ const AwsServicesDashboard = () => {
             {
               headers: {
                 Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
               },
             }
           );
           const data = await response.json();
           setEc2Data(data);
         } catch (error) {
-          console.error("Error fetching EC2 metadata:", error);
+          console.error('Error fetching EC2 metadata:', error);
         } finally {
           setLoading(false);
         }
@@ -77,7 +77,7 @@ const AwsServicesDashboard = () => {
   // Fetch RDS Metadata
   useEffect(() => {
     const fetchRDSData = async () => {
-      if (selectedAccount && selectedService === "RDS") {
+      if (selectedAccount && selectedService === 'RDS') {
         setLoading(true);
         setRdsData([]);
         try {
@@ -86,14 +86,14 @@ const AwsServicesDashboard = () => {
             {
               headers: {
                 Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
               },
             }
           );
           const data = await response.json();
           setRdsData(data);
         } catch (error) {
-          console.error("Error fetching RDS metadata:", error);
+          console.error('Error fetching RDS metadata:', error);
         } finally {
           setLoading(false);
         }
@@ -106,7 +106,7 @@ const AwsServicesDashboard = () => {
   // ✅ Fetch ASG Metadata
   useEffect(() => {
     const fetchASGData = async () => {
-      if (selectedAccount && selectedService === "ASG") {
+      if (selectedAccount && selectedService === 'ASG') {
         setLoading(true);
         setAsgData([]);
         try {
@@ -115,14 +115,14 @@ const AwsServicesDashboard = () => {
             {
               headers: {
                 Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
               },
             }
           );
           const data = await response.json();
           setAsgData(data);
         } catch (error) {
-          console.error("Error fetching ASG metadata:", error);
+          console.error('Error fetching ASG metadata:', error);
         } finally {
           setLoading(false);
         }
@@ -139,9 +139,7 @@ const AwsServicesDashboard = () => {
       {/* Cloud Account Dropdown */}
       <select
         onChange={(e) =>
-          setSelectedAccount(
-            cloudAccounts.find((acc) => acc.accountId === e.target.value)
-          )
+          setSelectedAccount(cloudAccounts.find((acc) => acc.accountId === e.target.value))
         }
       >
         <option value="">Select Cloud Account</option>
@@ -154,11 +152,11 @@ const AwsServicesDashboard = () => {
 
       {/* Service Buttons */}
       <div className="service-buttons">
-        {["EC2", "RDS", "ASG"].map((service) => (
+        {['EC2', 'RDS', 'ASG'].map((service) => (
           <button
             key={service}
             onClick={() => setSelectedService(service)}
-            className={selectedService === service ? "active" : ""}
+            className={selectedService === service ? 'active' : ''}
           >
             {service}
           </button>
@@ -166,13 +164,13 @@ const AwsServicesDashboard = () => {
       </div>
 
       {/* Render Selected Dashboard */}
-      {selectedService === "EC2" && selectedAccount && (
+      {selectedService === 'EC2' && selectedAccount && (
         <EC2Dashboard loading={loading} ec2Data={ec2Data} />
       )}
-      {selectedService === "RDS" && selectedAccount && (
+      {selectedService === 'RDS' && selectedAccount && (
         <RDSDashboard loading={loading} rdsData={rdsData} />
       )}
-      {selectedService === "ASG" && selectedAccount && (
+      {selectedService === 'ASG' && selectedAccount && (
         <ASGDashboard loading={loading} asgData={asgData} />
       )}
     </div>

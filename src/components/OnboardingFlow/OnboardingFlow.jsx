@@ -1,44 +1,44 @@
-import React, { useState, useEffect, useRef } from "react";
-import Step1 from "./step1";
-import Step2 from "./step2";
-import Step3 from "./step3";
-import Step4 from "./Step4"; // ✅ Thank you step
-import "../../components/OnboardingFlow/onboardingflow.css";
-import { Outlet } from "react-router-dom";
+import React, { useState, useEffect, useRef } from 'react';
+import Step1 from './step1';
+import Step2 from './step2';
+import Step3 from './step3';
+import Step4 from './Step4'; // ✅ Thank you step
+import './onboardingflow.css';
+import { Outlet } from 'react-router-dom';
 
 const OnboardingFlow = () => {
   const [step, setStep] = useState(1);
-  const [roleArn, setRoleArn] = useState("");
-  const [accountId, setAccountId] = useState("");
-  const [accountName, setAccountName] = useState("");
+  const [roleArn, setRoleArn] = useState('');
+  const [accountId, setAccountId] = useState('');
+  const [accountName, setAccountName] = useState('');
   const [policyCopySuccess, setPolicyCopySuccess] = useState(false);
   const [roleNameCopySuccess, setRoleNameCopySuccess] = useState(false);
   const onboardingContainerRef = useRef(null);
 
   useEffect(() => {
     if (onboardingContainerRef.current) {
-      onboardingContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
+      onboardingContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [step]);
 
   useEffect(() => {
-    window.scrollTo({ top: 1, behavior: "smooth" });
+    window.scrollTo({ top: 1, behavior: 'smooth' });
   }, [step]);
 
   const handlePolicyCopy = () => {
-    navigator.clipboard.writeText("...trust policy...");
+    navigator.clipboard.writeText('...trust policy...');
     setPolicyCopySuccess(true);
     setTimeout(() => setPolicyCopySuccess(false), 1500);
   };
 
   const handleRoleNameCopy = () => {
-    navigator.clipboard.writeText("CK-Tuner-Role-dev2");
+    navigator.clipboard.writeText('CK-Tuner-Role-dev2');
     setRoleNameCopySuccess(true);
     setTimeout(() => setRoleNameCopySuccess(false), 1500);
   };
 
   const handleSubmit = async () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
 
     const requestBody = {
       accountId,
@@ -47,27 +47,24 @@ const OnboardingFlow = () => {
     };
 
     try {
-      const response = await fetch(
-        "http://localhost:8080/admin/add-cloud-accounts",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
+      const response = await fetch('http://localhost:8080/admin/add-cloud-accounts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(requestBody),
+      });
 
       if (!response.ok) {
-        throw new Error("API request failed");
+        throw new Error('API request failed');
       }
 
-      console.log("Cloud account created successfully");
-      setStep(4); // ✅ Go to thank-you page
+      console.log('Cloud account created successfully');
+      setStep(4);
     } catch (error) {
-      console.error("Error creating cloud account:", error);
-      alert("Failed to create cloud account. Please try again.");
+      console.error('Error creating cloud account:', error);
+      alert('Failed to create cloud account. Please try again.');
     }
   };
 
@@ -108,26 +105,24 @@ const OnboardingFlow = () => {
   const getNextButtonLabel = () => {
     switch (step) {
       case 1:
-        return "Next - Add Customer Managed Policies";
+        return 'Next - Add Customer Managed Policies';
       case 2:
-        return "Create CUR";
+        return 'Create CUR';
       case 3:
-        return "Submit";
+        return 'Submit';
       default:
-        return "Next";
+        return 'Next';
     }
   };
 
   return (
-    
     <div className="onboarding-container" ref={onboardingContainerRef}>
-
       {renderStep()}
 
       {step < 4 && (
         <div className="onboarding-buttons">
           <button
-            className={`cancel-btn ${step === 1 ? "invisible-btn" : ""}`}
+            className={`cancel-btn ${step === 1 ? 'invisible-btn' : ''}`}
             onClick={() => setStep(step - 1)}
             disabled={step === 1}
           >
@@ -148,8 +143,7 @@ const OnboardingFlow = () => {
           </button>
         </div>
       )}
-          <Outlet/>
-
+      <Outlet />
     </div>
   );
 };

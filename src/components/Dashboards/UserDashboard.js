@@ -9,7 +9,6 @@ import AddUserPage from "../AddUser/AddUserPage";
 import OnboardingFlow from "../OnboardingFlow/OnboardingFlow";
 import AwsServicesDashboard from "../AWS_Service/AwsServicesDashboard";
 
-
 // Custom hook for fetching users
 const useFetchUsers = (role, selectedDashboard) => {
   const [users, setUsers] = useState([]);
@@ -53,6 +52,7 @@ const UserDashboard = () => {
   const role = localStorage.getItem("role");
   const firstName = localStorage.getItem("firstName");
   const email = localStorage.getItem("email");
+  const normalizedRole = role?.toUpperCase(); // This is now your main `role`
 
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("isAuthenticated");
@@ -146,7 +146,7 @@ const UserDashboard = () => {
                       <th>Email</th>
                       <th>Role</th>
                       <th>Last Login</th>
-                      <th>Edit</th>
+                      {role === "ADMIN" && <th>Edit</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -163,14 +163,16 @@ const UserDashboard = () => {
                           <td>{user.email}</td>
                           <td>{user.role}</td>
                           <td>{user.lastLogin}</td>
-                          <td>
-                            <button
-                              onClick={() => handleEditClick(user.id)}
-                              className="edit-btn"
-                            >
-                              <img src={editIcon} alt="edit-icon" />
-                            </button>
-                          </td>
+                          {role === "ADMIN" && (
+                            <td>
+                              <button
+                                onClick={() => handleEditClick(user.id)}
+                                className="edit-btn"
+                              >
+                                <img src={editIcon} alt="edit-icon" />
+                              </button>
+                            </td>
+                          )}
                         </tr>
                       ))
                     )}
@@ -202,7 +204,6 @@ const UserDashboard = () => {
     if (selectedDashboard === "AWS Services") {
       return <AwsServicesDashboard />;
     }
-    
 
     if (selectedDashboard === "Onboarding Dashboard") {
       return <OnboardingFlow />;
@@ -212,38 +213,46 @@ const UserDashboard = () => {
   }, [selectedDashboard, role, users, currentUserPage, loading, showAddUser]);
 
   const sidebarMenu = useMemo(() => {
-    const menuItems = {
-      ADMIN: [
-        {
-          label: "User Management",
-          action: () => handleDashboardChange("User Management"),
-        },
-        {
-          label: "Onboarding Dashboard",
-          action: () => handleDashboardChange("Onboarding Dashboard"),
-        },
-        {
-          label: "Cost Explorer",
-          action: () => handleDashboardChange("Cost Explorer"),
-        },
-        {
-          label: "AWS Services",
-          action: () => handleDashboardChange("AWS Services"),
-        },
-      ],
-      CUSTOMER: [
-        {
-          label: "Cost Explorer",
-          action: () => handleDashboardChange("Cost Explorer"),
-        },
-        {
-          label: "AWS Services",
-          action: () => handleDashboardChange("AWS Services"),
-        },
-      ],
-    };
-    return menuItems[role] || [];
-  }, [role]);
+    const fullAccessMenu = [
+      {
+        label: "User Management",
+        action: () => handleDashboardChange("User Management"),
+      },
+      {
+        label: "Onboarding Dashboard",
+        action: () => handleDashboardChange("Onboarding Dashboard"),
+      },
+      {
+        label: "Cost Explorer",
+        action: () => handleDashboardChange("Cost Explorer"),
+      },
+      {
+        label: "AWS Services",
+        action: () => handleDashboardChange("AWS Services"),
+      },
+    ];
+
+    const customerMenu = [
+      {
+        label: "Cost Explorer",
+        action: () => handleDashboardChange("Cost Explorer"),
+      },
+      {
+        label: "AWS Services",
+        action: () => handleDashboardChange("AWS Services"),
+      },
+    ];
+
+    if (normalizedRole === "ADMIN" || normalizedRole === "READ_ONLY") {
+      return fullAccessMenu;
+    }
+
+    if (normalizedRole === "CUSTOMER") {
+      return customerMenu;
+    }
+
+    return [];
+  }, [normalizedRole]);
 
   return (
     <div className="dashboard-layout">
