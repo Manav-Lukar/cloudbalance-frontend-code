@@ -68,7 +68,7 @@ const CostExplorer = () => {
             const rawData = await res.json();
             const usageArray = rawData.totalUsage || [];
 
-            // Convert flat array into monthly service data
+            // Ensure usageArray has at least 36 elements (12 for each service)
             const formattedData = monthLabels.map((month, index) => ({
               month,
               ec2: usageArray[index] || 0,
@@ -98,11 +98,20 @@ const CostExplorer = () => {
     dataFormat: "json",
     dataSource: {
       chart: {
-        
+        caption: "Monthly Service Costs",
         xAxisName: "Month",
-        yAxisName: "Cost ($)",
+        yAxisName: "Cost (in $)",
+        numberPrefix: "$",
         theme: "fusion",
+        drawCrossLine: "1",
+        plotFillAlpha: "80",
+        usePlotGradientColor: "0",
+        showPlotBorder: "0",
         showValues: "0",
+        paletteColors: "#0075c2,#1aaf5d,#f2c500", // Blue, Green, Yellow
+        toolTipBgColor: "#ffffff",
+        toolTipPadding: "10",
+        toolTipBorderColor: "#cccccc",
       },
       categories: [
         {
@@ -127,11 +136,12 @@ const CostExplorer = () => {
   };
 
   return (
-    <div>
+    <div style={{ padding: "20px" }}>
       <h2>Cost Explorer</h2>
       <select
         value={selectedAccount}
         onChange={(e) => setSelectedAccount(e.target.value)}
+        style={{ padding: "8px", marginBottom: "20px" }}
       >
         {accounts.map((account) => (
           <option key={account.accountId} value={account.accountId}>
@@ -139,9 +149,7 @@ const CostExplorer = () => {
           </option>
         ))}
       </select>
-      <div style={{ marginTop: "20px" }}>
-        <ReactFC {...chartConfig} />
-      </div>
+      <ReactFC {...chartConfig} />
     </div>
   );
 };
