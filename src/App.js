@@ -13,7 +13,6 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
 
-        {/* ✅ Protected Routes */}
         <Route
           path="/user-dashboard"
           element={
@@ -23,7 +22,6 @@ function App() {
           }
         />
 
-        {/* ✅ OnboardingFlow as parent route */}
         <Route
           path="/onboarding-container"
           element={
@@ -33,7 +31,6 @@ function App() {
           }
         />
 
-        {/* ✅ Subroute handled separately */}
         <Route
           path="/onboarding/customer-managed-policies"
           element={

@@ -11,8 +11,7 @@ const OnboardingFlow = () => {
   const [roleArn, setRoleArn] = useState('');
   const [accountId, setAccountId] = useState('');
   const [accountName, setAccountName] = useState('');
-  const [policyCopySuccess, setPolicyCopySuccess] = useState(false);
-  const [roleNameCopySuccess, setRoleNameCopySuccess] = useState(false);
+  const [isValid, setIsValid] = useState(false);  // Track validation state
   const onboardingContainerRef = useRef(null);
 
   useEffect(() => {
@@ -24,18 +23,6 @@ const OnboardingFlow = () => {
   useEffect(() => {
     window.scrollTo({ top: 1, behavior: 'smooth' });
   }, [step]);
-
-  const handlePolicyCopy = () => {
-    navigator.clipboard.writeText('...trust policy...');
-    setPolicyCopySuccess(true);
-    setTimeout(() => setPolicyCopySuccess(false), 1500);
-  };
-
-  const handleRoleNameCopy = () => {
-    navigator.clipboard.writeText('CK-Tuner-Role-dev2');
-    setRoleNameCopySuccess(true);
-    setTimeout(() => setRoleNameCopySuccess(false), 1500);
-  };
 
   const handleSubmit = async () => {
     const token = localStorage.getItem('token');
@@ -73,13 +60,13 @@ const OnboardingFlow = () => {
       case 1:
         return (
           <Step1
-            handlePolicyCopy={handlePolicyCopy}
-            policyCopySuccess={policyCopySuccess}
-            handleRoleNameCopy={handleRoleNameCopy}
-            roleNameCopySuccess={roleNameCopySuccess}
+            roleArn={roleArn}
             setRoleArn={setRoleArn}
+            accountId={accountId}
             setAccountId={setAccountId}
+            accountName={accountName}
             setAccountName={setAccountName}
+            setIsValid={setIsValid} // Pass setIsValid to Step1
           />
         );
       case 2:
@@ -132,7 +119,7 @@ const OnboardingFlow = () => {
           <button
             className="next-btn"
             onClick={() => {
-              if (step < 3) {
+              if (step < 3 && isValid) {
                 setStep(step + 1);
               } else if (step === 3) {
                 handleSubmit();

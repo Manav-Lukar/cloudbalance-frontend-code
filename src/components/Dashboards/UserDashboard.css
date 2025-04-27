@@ -841,3 +841,35 @@
   height: 40px;
   cursor: pointer;
 }
+
+.search-container {
+  position: relative;
+  width: 250px; /* Adjust width */
+  margin: 10px 20px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 40px 10px 15px; /* space for icon on right */
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background-color: var(--bg-card);
+  font-size: 14px;
+  box-shadow: var(--shadow-soft);
+  transition: border 0.3s ease;
+}
+
+.search-input:focus {
+  border-color: var(--bg-btn-primary);
+  outline: none;
+}
+
+.search-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 18px;
+  pointer-events: none; /* so it doesn't block typing */
+}

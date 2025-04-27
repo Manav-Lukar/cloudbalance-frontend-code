@@ -1,15 +1,17 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./UserDashboard.css";
+import { CiSearch } from "react-icons/ci";
 import loginIcon from "../../assets/Cloudkeeper_New.svg";
 import logOutIcon from "../../assets/logout.png";
 import userIcon from "../../assets/user icon.png";
 import editIcon from "../../assets/pencil.svg";
+import { FaFilter } from "react-icons/fa"; // Import the FaFilter icon
 import AddUserPage from "../AddUser/AddUserPage";
+import EditUserPage from "../EditUser/EditUserPage"; // Import the new component
 import OnboardingFlow from "../OnboardingFlow/OnboardingFlow";
 import AwsServicesDashboard from "../AWS_Service/AwsServicesDashboard";
 import CostExplorer from "../Cost explorer/CostExplorer";
-
 
 // Custom hook for fetching users
 const useFetchUsers = (role, selectedDashboard) => {
@@ -42,19 +44,22 @@ const useFetchUsers = (role, selectedDashboard) => {
 
 const UserDashboard = () => {
   const navigate = useNavigate();
-
   const [selectedDashboard, setSelectedDashboard] = useState(() => {
     return localStorage.getItem("selectedDashboard") || "User Management";
   });
   const [currentUserPage, setCurrentUserPage] = useState(0);
   const [showAddUser, setShowAddUser] = useState(false);
+  const [showEditUser, setShowEditUser] = useState(false); // New state for edit user
+  const [selectedUserId, setSelectedUserId] = useState(null); // New state to track which user is being edited
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const [searchQuery, setSearchQuery] = useState("");
 
   const usersPerPage = 9;
   const role = localStorage.getItem("role");
   const firstName = localStorage.getItem("firstName");
   const email = localStorage.getItem("email");
-  const normalizedRole = role?.toUpperCase(); // This is now your main `role`
+  const normalizedRole = role?.toUpperCase();
 
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("isAuthenticated");
@@ -84,6 +89,8 @@ const UserDashboard = () => {
   };
 
   const handleEditClick = (userId) => {
+    setSelectedUserId(userId);
+    setShowEditUser(true);
     console.log(`Editing user with ID: ${userId}`);
   };
 
@@ -100,27 +107,70 @@ const UserDashboard = () => {
     setIsSidebarCollapsed((prev) => !prev);
   };
 
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedUsers = useMemo(() => {
+    let filteredUsers = [...users];
+
+    // Apply search filter
+    if (searchQuery) {
+      filteredUsers = filteredUsers.filter((user) =>
+        `${user.firstName} ${user.lastName} ${user.email}`
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Apply sort
+    if (sortConfig.key) {
+      filteredUsers.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === "asc" ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === "asc" ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
+    return filteredUsers;
+  }, [users, sortConfig, searchQuery]);
+
   const renderDashboardContent = useMemo(() => {
     if (
       selectedDashboard === "User Management" &&
       (role === "ADMIN" || role === "READ_ONLY")
     ) {
-      const totalPages = Math.ceil(users.length / usersPerPage);
-      const paginatedUsers = users.slice(
+      const totalPages = Math.ceil(sortedUsers.length / usersPerPage);
+      const paginatedUsers = sortedUsers.slice(
         currentUserPage * usersPerPage,
         (currentUserPage + 1) * usersPerPage
       );
 
       return (
         <>
-          {!showAddUser && (
+          {!showAddUser && !showEditUser && (
             <div className="dashboard-header">
               <h1 className="dashboard-title">Users</h1>
             </div>
           )}
 
-          {showAddUser ? (
-            <button className="back-btn" onClick={() => setShowAddUser(false)}>
+          {(showAddUser || showEditUser) ? (
+            <button 
+              className="back-btn" 
+              onClick={() => {
+                setShowAddUser(false);
+                setShowEditUser(false);
+                setSelectedUserId(null);
+              }}
+            >
               Back to Dashboard
             </button>
           ) : (
@@ -134,20 +184,48 @@ const UserDashboard = () => {
             )
           )}
 
-          <div className={`form-container ${showAddUser ? "no-margin" : ""}`}>
+          <div className="form-container">
             {showAddUser ? (
               <AddUserPage setShowAddUser={setShowAddUser} />
+            ) : showEditUser ? (
+              <EditUserPage 
+                userId={selectedUserId}
+                setShowEditUser={setShowEditUser}
+              />
             ) : (
               <>
+                <div className="search-container">
+                  <span className="search-icon"><CiSearch/></span>
+                  <input
+                    type="text"
+                    className="search-input"
+                    placeholder="Search by name or email..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+
                 <table className="user-table">
                   <thead>
                     <tr>
-                      <th>ID</th>
-                      <th>First Name</th>
-                      <th>Last Name</th>
-                      <th>Email</th>
-                      <th>Role</th>
-                      <th>Last Login</th>
+                      <th onClick={() => handleSort("id")}>
+                        ID <FaFilter style={{ fontSize: "12px" }} />
+                      </th>
+                      <th onClick={() => handleSort("firstName")}>
+                        First Name <FaFilter style={{ fontSize: "12px" }} />
+                      </th>
+                      <th onClick={() => handleSort("lastName")}>
+                        Last Name <FaFilter style={{ fontSize: "12px" }} />
+                      </th>
+                      <th onClick={() => handleSort("email")}>
+                        Email <FaFilter style={{ fontSize: "12px" }} />
+                      </th>
+                      <th onClick={() => handleSort("role")}>
+                        Role <FaFilter style={{ fontSize: "12px" }} />
+                      </th>
+                      <th onClick={() => handleSort("lastLogin")}>
+                        Last Login <FaFilter style={{ fontSize: "12px" }} />
+                      </th>
                       {role === "ADMIN" && <th>Edit</th>}
                     </tr>
                   </thead>
@@ -180,6 +258,7 @@ const UserDashboard = () => {
                     )}
                   </tbody>
                 </table>
+
                 <div className="pagination-controls">
                   <button
                     onClick={() => handlePagination(-1)}
@@ -203,62 +282,40 @@ const UserDashboard = () => {
         </>
       );
     }
-    if (selectedDashboard === "AWS Services") {
-      return <AwsServicesDashboard />;
-    }
 
-    if (selectedDashboard === "Onboarding Dashboard") {
-      return <OnboardingFlow />;
-    }
-    if (selectedDashboard === "Cost Explorer") {
-      return <CostExplorer />;
-    }
+    if (selectedDashboard === "AWS Services") return <AwsServicesDashboard />;
+    if (selectedDashboard === "Onboarding Dashboard") return <OnboardingFlow />;
+    if (selectedDashboard === "Cost Explorer") return <CostExplorer />;
     
     return <h1>Welcome to {selectedDashboard}</h1>;
-    
-
-    return <h1>Welcome to {selectedDashboard}</h1>;
-  }, [selectedDashboard, role, users, currentUserPage, loading, showAddUser]);
+  }, [
+    selectedDashboard,
+    role,
+    sortedUsers,
+    currentUserPage,
+    loading,
+    showAddUser,
+    showEditUser,
+    selectedUserId,
+    searchQuery,
+    handlePagination
+  ]);
 
   const sidebarMenu = useMemo(() => {
     const fullAccessMenu = [
-      {
-        label: "User Management",
-        action: () => handleDashboardChange("User Management"),
-      },
-      {
-        label: "Onboarding Dashboard",
-        action: () => handleDashboardChange("Onboarding Dashboard"),
-      },
-      {
-        label: "Cost Explorer",
-        action: () => handleDashboardChange("Cost Explorer"),
-      },
-      {
-        label: "AWS Services",
-        action: () => handleDashboardChange("AWS Services"),
-      },
+      { label: "User Management", action: () => handleDashboardChange("User Management") },
+      { label: "Onboarding Dashboard", action: () => handleDashboardChange("Onboarding Dashboard") },
+      { label: "Cost Explorer", action: () => handleDashboardChange("Cost Explorer") },
+      { label: "AWS Services", action: () => handleDashboardChange("AWS Services") },
     ];
 
     const customerMenu = [
-      {
-        label: "Cost Explorer",
-        action: () => handleDashboardChange("Cost Explorer"),
-      },
-      {
-        label: "AWS Services",
-        action: () => handleDashboardChange("AWS Services"),
-      },
+      { label: "Cost Explorer", action: () => handleDashboardChange("Cost Explorer") },
+      { label: "AWS Services", action: () => handleDashboardChange("AWS Services") },
     ];
 
-    if (normalizedRole === "ADMIN" || normalizedRole === "READ_ONLY") {
-      return fullAccessMenu;
-    }
-
-    if (normalizedRole === "CUSTOMER") {
-      return customerMenu;
-    }
-
+    if (normalizedRole === "ADMIN" || normalizedRole === "READ_ONLY") return fullAccessMenu;
+    if (normalizedRole === "CUSTOMER") return customerMenu;
     return [];
   }, [normalizedRole]);
 
@@ -268,12 +325,8 @@ const UserDashboard = () => {
       <div className="navbar">
         <h2>
           <Link to="/user-dashboard">
-            <img
-              src={loginIcon}
-              alt="Cloudkeeper logo"
-              className="clickable-logo"
-            />
-          </Link>{" "}
+            <img src={loginIcon} alt="Cloudkeeper logo" className="clickable-logo" />
+          </Link>
         </h2>
 
         <div className="navbar-right">
@@ -289,11 +342,7 @@ const UserDashboard = () => {
       </div>
 
       {/* Sidebar + Main Content */}
-      <div
-        className={`dashboard-content ${
-          isSidebarCollapsed ? "collapsed" : ""
-        }`}
-      >
+      <div className={`dashboard-content ${isSidebarCollapsed ? "collapsed" : ""}`}>
         <div className={`sidebar ${isSidebarCollapsed ? "collapsed" : ""}`}>
           <div className="sidebar-toggle" onClick={toggleSidebar}>
             {isSidebarCollapsed ? "☰" : "☰"}

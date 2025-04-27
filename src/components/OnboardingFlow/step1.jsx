@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { FiCopy } from 'react-icons/fi';
 import roleImage from '../../assets/role.png'; // adjust path as needed
 import './onboardingflow.css';
-import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -32,17 +31,15 @@ const trustPolicy = {
 };
 
 const Step1 = ({
-  setStep,
   roleArn,
   setRoleArn,
   accountId,
   setAccountId,
   accountName,
   setAccountName,
+  setIsValid, // To set the validation status in the parent component
 }) => {
-  const navigate = useNavigate();
   const [errors, setErrors] = useState({});
-
   const role = localStorage.getItem('role');
   const normalizedRole = role?.toUpperCase();
 
@@ -58,18 +55,41 @@ const Step1 = ({
 
   const validateInputs = () => {
     const newErrors = {};
+
+    // Validate Role ARN
+    const arnRegex = /^arn:aws:iam::\d{12}:role\/[a-zA-Z0-9-_/]+$/;
     if (!roleArn.trim()) newErrors.roleArn = 'Role ARN is required';
+    else if (!arnRegex.test(roleArn)) newErrors.roleArn = 'Invalid Role ARN format';
+
+    // Validate Account ID (should be exactly 12 digits)
     if (!accountId.trim()) newErrors.accountId = 'Account ID is required';
+    else if (!/^\d{12}$/.test(accountId)) newErrors.accountId = 'Account ID must be 12 digits';
+
+    // Validate Account Name
     if (!accountName.trim()) newErrors.accountName = 'Account Name is required';
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNext = () => {
+  // Set the validation status in the parent component when user tries to go to the next step
+  const handleValidation = () => {
     if (validateInputs()) {
-      navigate('/onboarding/customer-managed-policies');
+      setIsValid(true);
+    } else {
+      setIsValid(false);
+      // Show error messages using toast notifications
+      if (errors.roleArn) toast.error(errors.roleArn);
+      if (errors.accountId) toast.error(errors.accountId);
+      if (errors.accountName) toast.error(errors.accountName);
     }
+    return validateInputs();
   };
+
+  // Call handleValidation whenever inputs change
+  React.useEffect(() => {
+    handleValidation();
+  }, [roleArn, accountId, accountName]);
 
   return (
     <div className="onboarding-container">
@@ -83,7 +103,6 @@ const Step1 = ({
         pauseOnFocusLoss={false}
         theme="light"
       />
-
       <h1 className="onboarding-title">Create an IAM Role</h1>
 
       <ol className="onboarding-steps">
@@ -120,12 +139,6 @@ const Step1 = ({
             </button>
             <pre className="code-block">{JSON.stringify(trustPolicy, null, 2)}</pre>
           </div>
-        </li>
-
-        <li>
-          Click on <strong>Next</strong> to go to the <i>Add permissions page</i>. We would not be
-          adding any permissions for now because the permission policy content will be dependent on
-          the <br /> AWS Account ID retrieved from the IAM Role. Click on <strong>Next</strong>.
         </li>
 
         <li>
@@ -191,15 +204,6 @@ const Step1 = ({
               disabled={normalizedRole === 'READ_ONLY'}
             />
           </div>
-
-          {/* Display error messages if any */}
-          {(errors.roleArn || errors.accountId || errors.accountName) && (
-            <ul style={{ color: 'red', marginTop: '8px', paddingLeft: '20px' }}>
-              {errors.roleArn && <li>{errors.roleArn}</li>}
-              {errors.accountId && <li>{errors.accountId}</li>}
-              {errors.accountName && <li>{errors.accountName}</li>}
-            </ul>
-          )}
         </li>
       </ol>
     </div>
