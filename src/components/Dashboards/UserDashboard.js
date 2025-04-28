@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './UserDashboard.css';
-import { CiSearch } from 'react-icons/ci';
+import { IoSearchSharp } from "react-icons/io5";
 import loginIcon from '../../assets/Cloudkeeper_New.svg';
 import logOutIcon from '../../assets/logout.png';
 import userIcon from '../../assets/user icon.png';
@@ -184,7 +184,7 @@ const UserDashboard = () => {
               <>
                 <div className="search-container">
                   <span className="search-icon">
-                    <CiSearch />
+                    <IoSearchSharp />
                   </span>
                   <input
                     type="text"

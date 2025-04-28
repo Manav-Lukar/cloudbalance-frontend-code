@@ -145,7 +145,7 @@ const EditUserPage = ({ userId, onCancel }) => {
 
   return (
     <>
-      <h2>Edit User</h2>
+      <h2 className="edit-user-text">Edit User</h2>
 
       {successMessage && <div className="message success">{successMessage}</div>}
       {errorMessage && <div className="message error">{errorMessage}</div>}
