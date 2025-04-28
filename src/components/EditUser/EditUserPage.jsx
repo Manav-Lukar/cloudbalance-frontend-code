@@ -1,71 +1,61 @@
-import React, { useState, useEffect } from 'react';
-import '../AddUser/AddUser.css'; // Reuse the same CSS for styling
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import "../AddUser/AddUser.css"; // Reusing the same CSS as AddUser
 
-const EditUserPage = () => {
-  const navigate = useNavigate();
-  const { userId } = useParams(); // Get userId from URL parameters
-
+const EditUserPage = ({ userId, onCancel }) => {
   const [cloudAccounts, setCloudAccounts] = useState([]);
   const [selectedAccountIds, setSelectedAccountIds] = useState([]);
-  const [email, setEmail] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [role, setRole] = useState('ADMIN');
-  const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [role, setRole] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const token = localStorage.getItem('token');
-  const userRole = localStorage.getItem('role');
-  console.log('Token:', token);
-  console.log('User ID:', userId);
+  const token = localStorage.getItem("token");
+  const userRole = localStorage.getItem("role");
 
-  const id = localStorage.getItem('userId');
-
-  // Fetch user data and their associated cloud accounts
+  // Fetch user data
   useEffect(() => {
-    if (!userRole || !userRole.includes('ADMIN')) {
-      navigate('/user-dashboard');
-      return;
-    }
-
     const fetchUserData = async () => {
       try {
-        setIsLoading(true);
-        // Fetch user details using the userId from URL
-        const userResponse = await fetch(`http://localhost:8080/login/users/${id}`, {
+        setLoading(true);
+        const response = await fetch(`http://localhost:8080/login/users/${userId}`, {
           headers: {
-            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
         });
 
-        if (!userResponse.ok) throw new Error(`HTTP error! status: ${userResponse.status}`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-        const userData = await userResponse.json();
-
-        // Set user data to state
-        setFirstName(userData.firstName);
-        setLastName(userData.lastName);
-        setEmail(userData.email);
-        setRole(userData.role);
-
-        // If user has associated cloud accounts, set them
+        const userData = await response.json();
+        setFirstName(userData.firstName || "");
+        setLastName(userData.lastName || "");
+        setEmail(userData.email || "");
+        setRole(userData.role || "");
+        
+        // If the user has cloud accounts, set them
         if (userData.cloudAccounts && userData.cloudAccounts.length > 0) {
-          setSelectedAccountIds(userData.cloudAccounts.map((account) => account.id));
+          setSelectedAccountIds(userData.cloudAccounts.map(account => account.id));
         }
       } catch (error) {
-        console.error('Failed to fetch user data:', error);
-        setErrorMessage('Failed to load user data. Please try again.');
+        console.error("Failed to fetch user data:", error);
+        setErrorMessage("Failed to load user data.");
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
+    if (userId) {
+      fetchUserData();
+    }
+  }, [userId, token]);
+
+  // Fetch cloud accounts
+  useEffect(() => {
     const fetchCloudAccounts = async () => {
       try {
-        const response = await fetch('http://localhost:8080/admin/cloud-accounts', {
+        const response = await fetch("http://localhost:8080/admin/cloud-accounts", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -76,18 +66,14 @@ const EditUserPage = () => {
         const data = await response.json();
         setCloudAccounts(data);
       } catch (error) {
-        console.error('Failed to fetch cloud accounts:', error);
+        console.error("Failed to fetch cloud accounts:", error);
       }
     };
 
     if (token) {
-      fetchUserData();
       fetchCloudAccounts();
-    } else {
-      console.warn('No token found in localStorage.');
-      navigate('/');
     }
-  }, [navigate, userRole, token, userId]);
+  }, [token]);
 
   const handleAssociate = (id) => {
     if (!selectedAccountIds.includes(id)) {
@@ -103,6 +89,7 @@ const EditUserPage = () => {
     e.preventDefault();
 
     const bodyData = {
+      id: userId,
       firstName,
       lastName,
       email,
@@ -111,20 +98,20 @@ const EditUserPage = () => {
     };
 
     try {
-      const response = await fetch(`http://localhost:8080/admin/update-user/${id}`, {
-        method: 'PUT',
+      const response = await fetch(`http://localhost:8080/admin/update-user/${userId}`, {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(bodyData),
       });
 
       if (response.ok) {
-        setSuccessMessage('User updated successfully!');
-        setErrorMessage('');
+        setSuccessMessage("User updated successfully!");
+        setErrorMessage("");
         setTimeout(() => {
-          navigate('/user-dashboard');
+          onCancel(); // Go back to user dashboard
         }, 2000);
       } else {
         const errorText = await response.text();
@@ -135,13 +122,13 @@ const EditUserPage = () => {
         } catch {
           errorMessage = errorText;
         }
-        setSuccessMessage('');
-        setErrorMessage('Failed to update user: ' + errorMessage);
+        setSuccessMessage("");
+        setErrorMessage("Failed to update user: " + errorMessage);
       }
     } catch (error) {
-      console.error('Error while updating user:', error);
-      setSuccessMessage('');
-      setErrorMessage('An error occurred. Check console for details.');
+      console.error("Error while updating user:", error);
+      setSuccessMessage("");
+      setErrorMessage("An error occurred. Check console for details.");
     }
   };
 
@@ -152,8 +139,8 @@ const EditUserPage = () => {
     selectedAccountIds.includes(account.id)
   );
 
-  if (isLoading) {
-    return <div className="loading">Loading user data...</div>;
+  if (loading) {
+    return <div>Loading user data...</div>;
   }
 
   return (
@@ -206,7 +193,7 @@ const EditUserPage = () => {
           </select>
         </div>
 
-        {role === 'CUSTOMER' && (
+        {role === "CUSTOMER" && (
           <div className="form-group full-width">
             <label className="cloud-label">Cloud Accounts</label>
             <div className="cloud-account-container">
@@ -247,9 +234,7 @@ const EditUserPage = () => {
 
         <div className="form-row center">
           <button type="submit">Update User</button>
-          <button type="button" className="cancel-btn" onClick={() => navigate('/user-dashboard')}>
-            Cancel
-          </button>
+          <button type="button" onClick={onCancel} className="cancel-btn">Cancel</button>
         </div>
       </form>
     </>

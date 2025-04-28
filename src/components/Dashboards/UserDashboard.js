@@ -1,17 +1,17 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import "./UserDashboard.css";
-import { CiSearch } from "react-icons/ci";
-import loginIcon from "../../assets/Cloudkeeper_New.svg";
-import logOutIcon from "../../assets/logout.png";
-import userIcon from "../../assets/user icon.png";
-import editIcon from "../../assets/pencil.svg";
-import { FaFilter } from "react-icons/fa"; // Import the FaFilter icon
-import AddUserPage from "../AddUser/AddUserPage";
-import EditUserPage from "../EditUser/EditUserPage"; // Import the new component
-import OnboardingFlow from "../OnboardingFlow/OnboardingFlow";
-import AwsServicesDashboard from "../AWS_Service/AwsServicesDashboard";
-import CostExplorer from "../Cost explorer/CostExplorer";
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import './UserDashboard.css';
+import { CiSearch } from 'react-icons/ci';
+import loginIcon from '../../assets/Cloudkeeper_New.svg';
+import logOutIcon from '../../assets/logout.png';
+import userIcon from '../../assets/user icon.png';
+import editIcon from '../../assets/pencil.svg';
+import { FaFilter } from 'react-icons/fa'; // Import the FaFilter icon
+import AddUserPage from '../AddUser/AddUserPage';
+import EditUserPage from '../EditUser/EditUserPage'; // Import the new component
+import OnboardingFlow from '../OnboardingFlow/OnboardingFlow';
+import AwsServicesDashboard from '../AWS_Service/AwsServicesDashboard';
+import CostExplorer from '../Cost explorer/CostExplorer';
 
 // Custom hook for fetching users
 const useFetchUsers = (role, selectedDashboard) => {
@@ -19,18 +19,15 @@ const useFetchUsers = (role, selectedDashboard) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (
-      selectedDashboard === "User Management" &&
-      (role === "ADMIN" || role === "READ_ONLY")
-    ) {
+    if (selectedDashboard === 'User Management' && (role === 'ADMIN' || role === 'READ_ONLY')) {
       const fetchUsers = async () => {
         try {
           setLoading(true);
-          const response = await fetch("http://localhost:8080/login/users");
+          const response = await fetch('http://localhost:8080/login/users');
           const data = await response.json();
           setUsers(data);
         } catch (error) {
-          console.error("Error fetching users:", error);
+          console.error('Error fetching users:', error);
         } finally {
           setLoading(false);
         }
@@ -45,46 +42,46 @@ const useFetchUsers = (role, selectedDashboard) => {
 const UserDashboard = () => {
   const navigate = useNavigate();
   const [selectedDashboard, setSelectedDashboard] = useState(() => {
-    return localStorage.getItem("selectedDashboard") || "User Management";
+    return localStorage.getItem('selectedDashboard') || 'User Management';
   });
   const [currentUserPage, setCurrentUserPage] = useState(0);
   const [showAddUser, setShowAddUser] = useState(false);
   const [showEditUser, setShowEditUser] = useState(false); // New state for edit user
   const [selectedUserId, setSelectedUserId] = useState(null); // New state to track which user is being edited
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
-  const [searchQuery, setSearchQuery] = useState("");
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [searchQuery, setSearchQuery] = useState('');
 
   const usersPerPage = 9;
-  const role = localStorage.getItem("role");
-  const firstName = localStorage.getItem("firstName");
-  const email = localStorage.getItem("email");
+  const role = localStorage.getItem('role');
+  const firstName = localStorage.getItem('firstName');
+  const email = localStorage.getItem('email');
   const normalizedRole = role?.toUpperCase();
 
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem("isAuthenticated");
+    const isAuthenticated = localStorage.getItem('isAuthenticated');
     if (!isAuthenticated) {
-      navigate("/");
+      navigate('/');
     }
   }, [navigate]);
 
   const { users, loading } = useFetchUsers(role, selectedDashboard);
 
   const handleLogout = async () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
     try {
-      await fetch("http://localhost:8080/auth/logout", {
-        method: "POST",
+      await fetch('http://localhost:8080/auth/logout', {
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
       });
     } catch (error) {
-      console.error("Logout error:", error);
+      console.error('Logout error:', error);
     } finally {
       localStorage.clear();
-      navigate("/");
+      navigate('/');
     }
   };
 
@@ -100,7 +97,7 @@ const UserDashboard = () => {
 
   const handleDashboardChange = (dashboard) => {
     setSelectedDashboard(dashboard);
-    localStorage.setItem("selectedDashboard", dashboard);
+    localStorage.setItem('selectedDashboard', dashboard);
   };
 
   const toggleSidebar = () => {
@@ -108,9 +105,9 @@ const UserDashboard = () => {
   };
 
   const handleSort = (key) => {
-    let direction = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc") {
-      direction = "desc";
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
     }
     setSortConfig({ key, direction });
   };
@@ -131,10 +128,10 @@ const UserDashboard = () => {
     if (sortConfig.key) {
       filteredUsers.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === "asc" ? -1 : 1;
+          return sortConfig.direction === 'asc' ? -1 : 1;
         }
         if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === "asc" ? 1 : -1;
+          return sortConfig.direction === 'asc' ? 1 : -1;
         }
         return 0;
       });
@@ -144,10 +141,7 @@ const UserDashboard = () => {
   }, [users, sortConfig, searchQuery]);
 
   const renderDashboardContent = useMemo(() => {
-    if (
-      selectedDashboard === "User Management" &&
-      (role === "ADMIN" || role === "READ_ONLY")
-    ) {
+    if (selectedDashboard === 'User Management' && (role === 'ADMIN' || role === 'READ_ONLY')) {
       const totalPages = Math.ceil(sortedUsers.length / usersPerPage);
       const paginatedUsers = sortedUsers.slice(
         currentUserPage * usersPerPage,
@@ -162,9 +156,9 @@ const UserDashboard = () => {
             </div>
           )}
 
-          {(showAddUser || showEditUser) ? (
-            <button 
-              className="back-btn" 
+          {showAddUser || showEditUser ? (
+            <button
+              className="back-btn"
               onClick={() => {
                 setShowAddUser(false);
                 setShowEditUser(false);
@@ -174,11 +168,8 @@ const UserDashboard = () => {
               Back to Dashboard
             </button>
           ) : (
-            role === "ADMIN" && (
-              <button
-                className="add-user-btn"
-                onClick={() => setShowAddUser(true)}
-              >
+            role === 'ADMIN' && (
+              <button className="add-user-btn" onClick={() => setShowAddUser(true)}>
                 + Add New User
               </button>
             )
@@ -188,14 +179,13 @@ const UserDashboard = () => {
             {showAddUser ? (
               <AddUserPage setShowAddUser={setShowAddUser} />
             ) : showEditUser ? (
-              <EditUserPage 
-                userId={selectedUserId}
-                setShowEditUser={setShowEditUser}
-              />
+              <EditUserPage userId={selectedUserId} setShowEditUser={setShowEditUser} />
             ) : (
               <>
                 <div className="search-container">
-                  <span className="search-icon"><CiSearch/></span>
+                  <span className="search-icon">
+                    <CiSearch />
+                  </span>
                   <input
                     type="text"
                     className="search-input"
@@ -208,25 +198,25 @@ const UserDashboard = () => {
                 <table className="user-table">
                   <thead>
                     <tr>
-                      <th onClick={() => handleSort("id")}>
-                        ID <FaFilter style={{ fontSize: "12px" }} />
+                      <th onClick={() => handleSort('id')}>
+                        ID <FaFilter style={{ fontSize: '12px' }} />
                       </th>
-                      <th onClick={() => handleSort("firstName")}>
-                        First Name <FaFilter style={{ fontSize: "12px" }} />
+                      <th onClick={() => handleSort('firstName')}>
+                        First Name <FaFilter style={{ fontSize: '12px' }} />
                       </th>
-                      <th onClick={() => handleSort("lastName")}>
-                        Last Name <FaFilter style={{ fontSize: "12px" }} />
+                      <th onClick={() => handleSort('lastName')}>
+                        Last Name <FaFilter style={{ fontSize: '12px' }} />
                       </th>
-                      <th onClick={() => handleSort("email")}>
-                        Email <FaFilter style={{ fontSize: "12px" }} />
+                      <th onClick={() => handleSort('email')}>
+                        Email <FaFilter style={{ fontSize: '12px' }} />
                       </th>
-                      <th onClick={() => handleSort("role")}>
-                        Role <FaFilter style={{ fontSize: "12px" }} />
+                      <th onClick={() => handleSort('role')}>
+                        Role <FaFilter style={{ fontSize: '12px' }} />
                       </th>
-                      <th onClick={() => handleSort("lastLogin")}>
-                        Last Login <FaFilter style={{ fontSize: "12px" }} />
+                      <th onClick={() => handleSort('lastLogin')}>
+                        Last Login <FaFilter style={{ fontSize: '12px' }} />
                       </th>
-                      {role === "ADMIN" && <th>Edit</th>}
+                      {role === 'ADMIN' && <th>Edit</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -243,12 +233,9 @@ const UserDashboard = () => {
                           <td>{user.email}</td>
                           <td>{user.role}</td>
                           <td>{user.lastLogin}</td>
-                          {role === "ADMIN" && (
+                          {role === 'ADMIN' && (
                             <td>
-                              <button
-                                onClick={() => handleEditClick(user.id)}
-                                className="edit-btn"
-                              >
+                              <button onClick={() => handleEditClick(user.id)} className="edit-btn">
                                 <img src={editIcon} alt="edit-icon" />
                               </button>
                             </td>
@@ -260,10 +247,7 @@ const UserDashboard = () => {
                 </table>
 
                 <div className="pagination-controls">
-                  <button
-                    onClick={() => handlePagination(-1)}
-                    disabled={currentUserPage === 0}
-                  >
+                  <button onClick={() => handlePagination(-1)} disabled={currentUserPage === 0}>
                     Previous
                   </button>
                   <span>
@@ -283,10 +267,10 @@ const UserDashboard = () => {
       );
     }
 
-    if (selectedDashboard === "AWS Services") return <AwsServicesDashboard />;
-    if (selectedDashboard === "Onboarding Dashboard") return <OnboardingFlow />;
-    if (selectedDashboard === "Cost Explorer") return <CostExplorer />;
-    
+    if (selectedDashboard === 'AWS Services') return <AwsServicesDashboard />;
+    if (selectedDashboard === 'Onboarding Dashboard') return <OnboardingFlow />;
+    if (selectedDashboard === 'Cost Explorer') return <CostExplorer />;
+
     return <h1>Welcome to {selectedDashboard}</h1>;
   }, [
     selectedDashboard,
@@ -298,24 +282,27 @@ const UserDashboard = () => {
     showEditUser,
     selectedUserId,
     searchQuery,
-    handlePagination
+    handlePagination,
   ]);
 
   const sidebarMenu = useMemo(() => {
     const fullAccessMenu = [
-      { label: "User Management", action: () => handleDashboardChange("User Management") },
-      { label: "Onboarding Dashboard", action: () => handleDashboardChange("Onboarding Dashboard") },
-      { label: "Cost Explorer", action: () => handleDashboardChange("Cost Explorer") },
-      { label: "AWS Services", action: () => handleDashboardChange("AWS Services") },
+      { label: 'User Management', action: () => handleDashboardChange('User Management') },
+      {
+        label: 'Onboarding Dashboard',
+        action: () => handleDashboardChange('Onboarding Dashboard'),
+      },
+      { label: 'Cost Explorer', action: () => handleDashboardChange('Cost Explorer') },
+      { label: 'AWS Services', action: () => handleDashboardChange('AWS Services') },
     ];
 
     const customerMenu = [
-      { label: "Cost Explorer", action: () => handleDashboardChange("Cost Explorer") },
-      { label: "AWS Services", action: () => handleDashboardChange("AWS Services") },
+      { label: 'Cost Explorer', action: () => handleDashboardChange('Cost Explorer') },
+      { label: 'AWS Services', action: () => handleDashboardChange('AWS Services') },
     ];
 
-    if (normalizedRole === "ADMIN" || normalizedRole === "READ_ONLY") return fullAccessMenu;
-    if (normalizedRole === "CUSTOMER") return customerMenu;
+    if (normalizedRole === 'ADMIN' || normalizedRole === 'READ_ONLY') return fullAccessMenu;
+    if (normalizedRole === 'CUSTOMER') return customerMenu;
     return [];
   }, [normalizedRole]);
 
@@ -342,10 +329,10 @@ const UserDashboard = () => {
       </div>
 
       {/* Sidebar + Main Content */}
-      <div className={`dashboard-content ${isSidebarCollapsed ? "collapsed" : ""}`}>
-        <div className={`sidebar ${isSidebarCollapsed ? "collapsed" : ""}`}>
+      <div className={`dashboard-content ${isSidebarCollapsed ? 'collapsed' : ''}`}>
+        <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
           <div className="sidebar-toggle" onClick={toggleSidebar}>
-            {isSidebarCollapsed ? "☰" : "☰"}
+            {isSidebarCollapsed ? '☰' : '☰'}
           </div>
           <ul className="sidebar-menu">
             {sidebarMenu.map((item, index) => (

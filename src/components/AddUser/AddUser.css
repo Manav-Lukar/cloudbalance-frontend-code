@@ -49,6 +49,7 @@
 
 .form-row.center {
     width: 100%;
+    gap: 40px;
     display: flex;
     justify-content: center;
     margin-top: 20px;
