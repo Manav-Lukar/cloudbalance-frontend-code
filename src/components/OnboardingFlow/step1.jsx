@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { FiCopy } from 'react-icons/fi';
 import roleImage from '../../assets/role.png'; // adjust path as needed
 import './onboardingflow.css';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 const trustPolicy = {
   Version: '2012-10-17',
@@ -37,7 +35,7 @@ const Step1 = ({
   setAccountId,
   accountName,
   setAccountName,
-  setIsValid, // To set the validation status in the parent component
+  setIsValid,
 }) => {
   const [errors, setErrors] = useState({});
   const role = localStorage.getItem('role');
@@ -45,64 +43,35 @@ const Step1 = ({
 
   const handlePolicyCopy = () => {
     navigator.clipboard.writeText(JSON.stringify(trustPolicy, null, 2));
-    toast.success('Data copied!');
   };
 
   const handleRoleNameCopy = () => {
     navigator.clipboard.writeText('CK-Tuner-Role-dev2');
-    toast.success('Data copied!');
   };
 
   const validateInputs = () => {
     const newErrors = {};
 
-    // Validate Role ARN
     const arnRegex = /^arn:aws:iam::\d{12}:role\/[a-zA-Z0-9-_/]+$/;
     if (!roleArn.trim()) newErrors.roleArn = 'Role ARN is required';
     else if (!arnRegex.test(roleArn)) newErrors.roleArn = 'Invalid Role ARN format';
 
-    // Validate Account ID (should be exactly 12 digits)
     if (!accountId.trim()) newErrors.accountId = 'Account ID is required';
     else if (!/^\d{12}$/.test(accountId)) newErrors.accountId = 'Account ID must be 12 digits';
 
-    // Validate Account Name
     if (!accountName.trim()) newErrors.accountName = 'Account Name is required';
 
     setErrors(newErrors);
+    setIsValid(Object.keys(newErrors).length === 0);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Set the validation status in the parent component when user tries to go to the next step
-  const handleValidation = () => {
-    if (validateInputs()) {
-      setIsValid(true);
-    } else {
-      setIsValid(false);
-      // Show error messages using toast notifications
-      if (errors.roleArn) toast.error(errors.roleArn);
-      if (errors.accountId) toast.error(errors.accountId);
-      if (errors.accountName) toast.error(errors.accountName);
-    }
-    return validateInputs();
-  };
-
-  // Call handleValidation whenever inputs change
   React.useEffect(() => {
-    handleValidation();
+    validateInputs();
   }, [roleArn, accountId, accountName]);
 
   return (
     <div className="onboarding-container">
-      <ToastContainer
-        position="top-right"
-        autoClose={1500}
-        hideProgressBar={true}
-        closeOnClick
-        pauseOnHover={false}
-        draggable
-        pauseOnFocusLoss={false}
-        theme="light"
-      />
       <h1 className="onboarding-title">Create an IAM Role</h1>
 
       <ol className="onboarding-steps">
@@ -170,6 +139,7 @@ const Step1 = ({
             <img src={roleImage} alt="Step 5 Screenshot" />
           </div>
         </li>
+
         <li className="step-six">
           <p className="step-heading">Paste the copied Role ARN below -</p>
           <label htmlFor="roleArn" className="input-label">

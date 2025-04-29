@@ -57,27 +57,6 @@ const Login = () => {
       localStorage.setItem("role", data.role);
       localStorage.setItem("isAuthenticated", "true");
       localStorage.setItem("token", token);
-      
-
-      try {
-        const lastLoginRes = await fetch("http://localhost:8080/login/authenticate", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            email,
-            password: userPassword,
-          }),
-        });
-
-        if (!lastLoginRes.ok) {
-          console.warn("Failed to update last login.");
-        }
-      } catch (lastLoginErr) {
-        console.error("Error in last login API:", lastLoginErr);
-      }
 
       toast.success("Login successful!", {
         position: "top-right",
@@ -129,7 +108,6 @@ const Login = () => {
       </div>
     </div>
   );
-  
 };
 
 export default Login;

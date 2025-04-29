@@ -113,7 +113,6 @@ const UserDashboard = () => {
   const sortedUsers = useMemo(() => {
     let filteredUsers = [...users];
 
-    // Apply search filter
     if (searchQuery) {
       filteredUsers = filteredUsers.filter((user) =>
         `${user.firstName} ${user.lastName} ${user.email}`
@@ -122,7 +121,6 @@ const UserDashboard = () => {
       );
     }
 
-    // Apply sort
     if (sortConfig.key) {
       filteredUsers.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
@@ -148,29 +146,31 @@ const UserDashboard = () => {
 
       return (
         <>
-          {/* Header: Title and Action Buttons */}
+          {/* Heading */}
           <div className="dashboard-header">
             <h1 className="dashboard-title">Users</h1>
-            <div className="dashboard-action-btns">
-              {showAddUser || showEditUser ? (
-                <button
-                  className="back-btn"
-                  onClick={() => {
-                    setShowAddUser(false);
-                    setShowEditUser(false);
-                    setSelectedUserId(null);
-                  }}
-                >
-                  Back to Dashboard
+          </div>
+
+          {/* Buttons below heading */}
+          <div className="dashboard-action-btns">
+            {showAddUser || showEditUser ? (
+              <button
+                className="back-btn"
+                onClick={() => {
+                  setShowAddUser(false);
+                  setShowEditUser(false);
+                  setSelectedUserId(null);
+                }}
+              >
+                Back to Dashboard
+              </button>
+            ) : (
+              role === 'ADMIN' && (
+                <button className="add-user-btn" onClick={() => setShowAddUser(true)}>
+                  + Add New User
                 </button>
-              ) : (
-                role === 'ADMIN' && (
-                  <button className="add-user-btn" onClick={() => setShowAddUser(true)}>
-                    + Add New User
-                  </button>
-                )
-              )}
-            </div>
+              )
+            )}
           </div>
 
           <div className="form-container">
@@ -290,10 +290,7 @@ const UserDashboard = () => {
   const sidebarMenu = useMemo(() => {
     const fullAccessMenu = [
       { label: 'User Management', action: () => handleDashboardChange('User Management') },
-      {
-        label: 'Onboarding Dashboard',
-        action: () => handleDashboardChange('Onboarding Dashboard'),
-      },
+      { label: 'Onboarding Dashboard', action: () => handleDashboardChange('Onboarding Dashboard') },
       { label: 'Cost Explorer', action: () => handleDashboardChange('Cost Explorer') },
       { label: 'AWS Services', action: () => handleDashboardChange('AWS Services') },
     ];

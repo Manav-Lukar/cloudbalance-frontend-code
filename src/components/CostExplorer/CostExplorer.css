@@ -131,25 +131,57 @@
 /* Resource table styles */
 .resource-table-container {
   overflow-x: auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .resource-table {
   width: 100%;
   border-collapse: collapse;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
 }
 
 .resource-table th {
-  border-bottom: 2px solid #ccc;
-  padding: 8px;
-  cursor: pointer;
-  margin-left: 300px;
+  position: sticky;
+  top: 0;
+  background-color: #f9fafb;
+  color: #333;
+  text-align: left;
+  font-weight: 600;
+  padding: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  z-index: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .resource-table th .filter-icon {
-  margin-left: 5px;
+  margin-left: 6px;
+  vertical-align: middle;
 }
 
 .resource-table td {
-  border-bottom: 1px solid #eee;
-  padding: 8px;
+  padding: 12px;
+  border-bottom: 1px solid #edf2f7;
+  white-space: nowrap;
+}
+
+.resource-table tr:nth-child(even) {
+  background-color: #f7fafc;
+}
+
+.resource-table tr:hover {
+  background-color: #ebf8ff;
+}
+
+.resource-table td:last-child,
+.resource-table td:nth-child(n+2) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.resource-table tr:last-child td {
+  font-weight: bold;
+  background-color: #edf2f7;
 }
