@@ -11,7 +11,6 @@ import AccountSelector from './AccountSelector';
 import ChartSection from './ChartSection';
 import TableSection from './TableSection';
 import FilterSidebar from './FilterSidebar';
-
 import { BarChart2, LineChart, Download, Filter } from 'lucide-react';
 
 import './CostExplorer.css';
@@ -295,45 +294,6 @@ const CostExplorer = () => {
     // setSelectedFilterGroups([]);
   };
 
-  // Download data as Excel
-  const downloadExcel = async () => {
-    try {
-      const requestBody = {
-        startDate: dateRange.startDate,
-        endDate: dateRange.endDate,
-        accountId: selectedAccount,
-        groupBy,
-        filters: selectedFilters,
-      };
-      
-      const response = await fetch('http://localhost:8080/snowflake/download', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `cost-explorer-${new Date().toISOString().split('T')[0]}.xlsx`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-      } else {
-        console.error('Failed to download Excel');
-        // Optionally show error toast
-      }
-    } catch (error) {
-      console.error('Error downloading Excel:', error);
-      // Optionally show error toast
-    }
-  };
-
   const getChartConfig = () => {
     if (!tableData.length) return null;
 
@@ -441,13 +401,7 @@ const CostExplorer = () => {
             )}
           </button>
   
-          <button
-            className="download-btn"
-            onClick={downloadExcel}
-            title="Download Excel"
-          >
-            <Download size={18} />
-          </button>
+          
         </div>
       </div>
   

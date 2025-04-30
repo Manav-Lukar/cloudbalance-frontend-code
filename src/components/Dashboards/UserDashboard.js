@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import './UserDashboard.css';
 import { IoSearchSharp } from 'react-icons/io5';
 import loginIcon from '../../assets/Cloudkeeper_New.svg';
@@ -13,13 +13,12 @@ import OnboardingFlow from '../OnboardingFlow/OnboardingFlow';
 import AwsServicesDashboard from '../AWS_Service/AwsServicesDashboard';
 import CostExplorer from '../CostExplorer/CostExplorer';
 
-// Custom hook for fetching users
 const useFetchUsers = (role, selectedDashboard) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (selectedDashboard === 'User Management' && (role === 'ADMIN' || role === 'READ_ONLY')) {
+    if (selectedDashboard === 'user-dashboard' && (role === 'ADMIN' || role === 'READ_ONLY')) {
       const fetchUsers = async () => {
         try {
           setLoading(true);
@@ -41,9 +40,9 @@ const useFetchUsers = (role, selectedDashboard) => {
 
 const UserDashboard = () => {
   const navigate = useNavigate();
-  const [selectedDashboard, setSelectedDashboard] = useState(() => {
-    return localStorage.getItem('selectedDashboard') || 'User Management';
-  });
+  const location = useLocation();
+  const path = location.pathname.replace('/', '') || 'user-dashboard';
+
   const [currentUserPage, setCurrentUserPage] = useState(0);
   const [showAddUser, setShowAddUser] = useState(false);
   const [showEditUser, setShowEditUser] = useState(false);
@@ -59,12 +58,18 @@ const UserDashboard = () => {
 
   useEffect(() => {
     const isAuthenticated = localStorage.getItem('isAuthenticated');
+    const role = localStorage.getItem('role');
+    const currentPath = location.pathname;
+  
     if (!isAuthenticated) {
       navigate('/');
+    } else if (role === 'CUSTOMER' && currentPath === '/user-dashboard') {
+      navigate('/cost-explorer');
     }
-  }, [navigate]);
+  }, [navigate, location]);
+  
 
-  const { users, loading } = useFetchUsers(role, selectedDashboard);
+  const { users, loading } = useFetchUsers(role, path);
 
   const handleLogout = async () => {
     const token = localStorage.getItem('token');
@@ -93,11 +98,6 @@ const UserDashboard = () => {
     setCurrentUserPage((prev) => prev + direction);
   }, []);
 
-  const handleDashboardChange = (dashboard) => {
-    setSelectedDashboard(dashboard);
-    localStorage.setItem('selectedDashboard', dashboard);
-  };
-
   const toggleSidebar = () => {
     setIsSidebarCollapsed((prev) => !prev);
   };
@@ -113,7 +113,6 @@ const UserDashboard = () => {
   const sortedUsers = useMemo(() => {
     let filteredUsers = [...users];
 
-    // Apply search filter
     if (searchQuery) {
       filteredUsers = filteredUsers.filter((user) =>
         `${user.firstName} ${user.lastName} ${user.email}`
@@ -122,7 +121,6 @@ const UserDashboard = () => {
       );
     }
 
-    // Apply sort
     if (sortConfig.key) {
       filteredUsers.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
@@ -139,7 +137,7 @@ const UserDashboard = () => {
   }, [users, sortConfig, searchQuery]);
 
   const renderDashboardContent = useMemo(() => {
-    if (selectedDashboard === 'User Management' && (role === 'ADMIN' || role === 'READ_ONLY')) {
+    if (path === 'user-dashboard' && (role === 'ADMIN' || role === 'READ_ONLY')) {
       const totalPages = Math.ceil(sortedUsers.length / usersPerPage);
       const paginatedUsers = sortedUsers.slice(
         currentUserPage * usersPerPage,
@@ -148,7 +146,6 @@ const UserDashboard = () => {
 
       return (
         <>
-          {/* Header: Title and Action Buttons */}
           <div className="dashboard-header">
             <h1 className="dashboard-title">Users</h1>
             <div className="dashboard-action-btns">
@@ -180,7 +177,6 @@ const UserDashboard = () => {
               <EditUserPage userId={selectedUserId} setShowEditUser={setShowEditUser} />
             ) : (
               <>
-                {/* Search Bar */}
                 <div className="search-container">
                   <span className="search-icon">
                     <IoSearchSharp />
@@ -194,7 +190,6 @@ const UserDashboard = () => {
                   />
                 </div>
 
-                {/* User Table */}
                 <table className="user-table">
                   <thead>
                     <tr>
@@ -246,7 +241,6 @@ const UserDashboard = () => {
                   </tbody>
                 </table>
 
-                {/* Pagination Controls */}
                 <div className="pagination-controls">
                   <button onClick={() => handlePagination(-1)} disabled={currentUserPage === 0}>
                     Previous
@@ -268,49 +262,37 @@ const UserDashboard = () => {
       );
     }
 
-    if (selectedDashboard === 'AWS Services') return <AwsServicesDashboard />;
-    if (selectedDashboard === 'Onboarding Dashboard') return <OnboardingFlow />;
-    if (selectedDashboard === 'Cost Explorer') return <CostExplorer />;
+    if (path === 'aws-services') return <AwsServicesDashboard />;
+    if (path === 'onboarding-dashboard') return <OnboardingFlow />;
+    if (path === 'cost-explorer') return <CostExplorer />;
 
-    return <h1>Welcome to {selectedDashboard}</h1>;
-  }, [
-    selectedDashboard,
-    role,
-    sortedUsers,
-    currentUserPage,
-    loading,
-    showAddUser,
-    showEditUser,
-    selectedUserId,
-    searchQuery,
-    handlePagination,
-    handleSort,
-  ]);
+    return <h1>Welcome to Dashboard</h1>;
+  }, [path, role, sortedUsers, currentUserPage, loading, showAddUser, showEditUser, selectedUserId, searchQuery, handlePagination, handleSort]);
 
   const sidebarMenu = useMemo(() => {
     const fullAccessMenu = [
-      { label: 'User Management', action: () => handleDashboardChange('User Management') },
-      {
-        label: 'Onboarding Dashboard',
-        action: () => handleDashboardChange('Onboarding Dashboard'),
-      },
-      { label: 'Cost Explorer', action: () => handleDashboardChange('Cost Explorer') },
-      { label: 'AWS Services', action: () => handleDashboardChange('AWS Services') },
+      { label: 'User Management', path: 'user-dashboard' },
+      { label: 'Onboarding Dashboard', path: 'onboarding-dashboard' },
+      { label: 'Cost Explorer', path: 'cost-explorer' },
+      { label: 'AWS Services', path: 'aws-services' },
     ];
-
+    const readOnlyMenu = [
+      { label: 'User Management', path: 'user-dashboard' },
+      { label: 'Cost Explorer', path: 'cost-explorer' },
+      { label: 'AWS Services', path: 'aws-services' },
+    ]
     const customerMenu = [
-      { label: 'Cost Explorer', action: () => handleDashboardChange('Cost Explorer') },
-      { label: 'AWS Services', action: () => handleDashboardChange('AWS Services') },
+      { label: 'Cost Explorer', path: 'cost-explorer' },
+      { label: 'AWS Services', path: 'aws-services' },
     ];
-
-    if (normalizedRole === 'ADMIN' || normalizedRole === 'READ_ONLY') return fullAccessMenu;
+    if (normalizedRole === 'ADMIN') return fullAccessMenu;
+    if (normalizedRole === 'READ_ONLY') return readOnlyMenu;
     if (normalizedRole === 'CUSTOMER') return customerMenu;
     return [];
   }, [normalizedRole]);
 
   return (
     <div className="dashboard-layout">
-      {/* Navbar */}
       <div className="navbar">
         <h2>
           <Link to="/user-dashboard">
@@ -330,7 +312,6 @@ const UserDashboard = () => {
         </div>
       </div>
 
-      {/* Sidebar + Main Content */}
       <div className={`dashboard-content ${isSidebarCollapsed ? 'collapsed' : ''}`}>
         <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
           <div className="sidebar-toggle" onClick={toggleSidebar}>
@@ -338,7 +319,11 @@ const UserDashboard = () => {
           </div>
           <ul className="sidebar-menu">
             {sidebarMenu.map((item, index) => (
-              <li key={index} onClick={item.action} title={item.label}>
+              <li
+                key={index}
+                onClick={() => navigate(`/${item.path}`)}
+                title={item.label}
+              >
                 {isSidebarCollapsed ? null : item.label}
               </li>
             ))}

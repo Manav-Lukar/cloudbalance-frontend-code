@@ -13,7 +13,7 @@ const FilterSidebar = ({
   handleFilterChange,
   clearFilters,
   isLoadingFilters,
-  filterPanelRef
+  filterPanelRef,
 }) => {
   if (!showFilters) return null;
 
@@ -54,9 +54,10 @@ const FilterSidebar = ({
               ) : (
                 <div className="filter-options-list">
                   {filterOptions[group]?.map((option, index) => {
-                    const optionValue = typeof option === 'object' && option !== null
-                      ? (Object.values(option)[0] || 'Unknown')
-                      : (option || 'Unknown');
+                    const optionValue =
+                      typeof option === 'object' && option !== null
+                        ? Object.values(option)[0] || 'Unknown'
+                        : option || 'Unknown';
                     return (
                       <div key={index} className="filter-option-item">
                         <label>
