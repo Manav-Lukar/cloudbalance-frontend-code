@@ -10,8 +10,9 @@ import GroupBySelector from './GroupBySelector';
 import AccountSelector from './AccountSelector';
 import ChartSection from './ChartSection';
 import TableSection from './TableSection';
+import FilterSidebar from './FilterSidebar';
 
-import { BarChart2, LineChart } from 'lucide-react';
+import { BarChart2, LineChart, Download, Filter } from 'lucide-react';
 
 import './CostExplorer.css';
 
@@ -23,17 +24,25 @@ const CostExplorer = () => {
   const [chartData, setChartData] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [dateRange, setDateRange] = useState({ startDate: '2025-04', endDate: '2025-04' });
-  const [groupBy, setGroupBy] = useState('');
+  const [groupBy, setGroupBy] = useState('Service');
   const [groupByOptions, setGroupByOptions] = useState([]);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [filters, setFilters] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingGroups, setIsLoadingGroups] = useState(false);
   const [error, setError] = useState(null);
-
   const [chartType, setChartType] = useState('mscolumn2d');
+  
+  // Filter related states
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterGroups, setFilterGroups] = useState([]);
+  const [selectedFilterGroups, setSelectedFilterGroups] = useState([]);
+  const [filterOptions, setFilterOptions] = useState({});
+  const [selectedFilters, setSelectedFilters] = useState({});
+  const [isLoadingFilters, setIsLoadingFilters] = useState(false);
 
   const dropdownRef = useRef(null);
+  const filterPanelRef = useRef(null);
   const tableRef = useRef(null);
 
   const role = localStorage.getItem('role');
@@ -46,11 +55,19 @@ const CostExplorer = () => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowMoreOptions(false);
       }
+      
+      // Close filter panel when clicking outside
+      if (filterPanelRef.current && 
+          !filterPanelRef.current.contains(event.target) &&
+          !event.target.closest('.filter-toggle-btn')) {
+        setShowFilters(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Fetch group by options
   useEffect(() => {
     const fetchGroupByOptions = async () => {
       setIsLoadingGroups(true);
@@ -64,6 +81,9 @@ const CostExplorer = () => {
           if (!groupBy && data.length > 0) {
             setGroupBy(data[0].displayName);
           }
+          
+          // Once we have group options, also set them as potential filter groups
+          setFilterGroups(data.map(item => item.displayName));
         } else {
           console.error('Failed to fetch group by options.');
           setError('Failed to fetch group by options.');
@@ -78,8 +98,9 @@ const CostExplorer = () => {
     if (token) {
       fetchGroupByOptions();
     }
-  }, [token, groupBy]);
+  }, [token]);
 
+  // Fetch accounts
   useEffect(() => {
     const fetchAccounts = async () => {
       try {
@@ -113,6 +134,40 @@ const CostExplorer = () => {
     }
   }, [role, token]);
 
+  // Fetch filter options for selected filter groups
+  useEffect(() => {
+    const fetchFilterOptions = async (filterGroup) => {
+      setIsLoadingFilters(true);
+      try {
+        const response = await fetch(`http://localhost:8080/snowflake/filters/${filterGroup}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          // Make sure we have full option values
+          setFilterOptions(prevOptions => ({
+            ...prevOptions,
+            [filterGroup]: data
+          }));
+        } else {
+          console.error(`Failed to fetch filter options for ${filterGroup}`);
+        }
+      } catch (error) {
+        console.error(`Error fetching filter options for ${filterGroup}:`, error);
+      } finally {
+        setIsLoadingFilters(false);
+      }
+    };
+    
+    selectedFilterGroups.forEach(filterGroup => {
+      if (!filterOptions[filterGroup]) {
+        fetchFilterOptions(filterGroup);
+      }
+    });
+  }, [selectedFilterGroups, token]);
+
+  // Fetch cost data
   useEffect(() => {
     const fetchCostData = async () => {
       if (!selectedAccount || !groupBy) return;
@@ -126,8 +181,9 @@ const CostExplorer = () => {
           endDate: dateRange.endDate,
           accountId: selectedAccount,
           groupBy,
-          filters,
+          filters: selectedFilters,
         };
+        
         const response = await fetch('http://localhost:8080/snowflake/dynamic-cost-data', {
           method: 'POST',
           headers: {
@@ -157,7 +213,7 @@ const CostExplorer = () => {
       }
     };
     fetchCostData();
-  }, [selectedAccount, dateRange, groupBy, filters]);
+  }, [selectedAccount, dateRange, groupBy, selectedFilters]);
 
   const processChartData = (data) => {
     if (!data || data.length === 0) {
@@ -192,12 +248,90 @@ const CostExplorer = () => {
     setChartData(chartDataArr);
   };
 
-  const formatDateRange = () => {
-    const start = new Date(`${dateRange.startDate}-01`);
-    const [endYear, endMonth] = dateRange.endDate.split('-');
-    const endDate = new Date(endYear, endMonth, 0);
-    const options = { day: '2-digit', month: 'short', year: 'numeric' };
-    return `${start.toLocaleDateString('en-US', options)} - ${endDate.toLocaleDateString('en-US', options)}`;
+  const handleFilterGroupToggle = (filterGroup) => {
+    setSelectedFilterGroups(prev => {
+      if (prev.includes(filterGroup)) {
+        // Remove filter group and its selected values
+        setSelectedFilters(prevFilters => {
+          const updatedFilters = { ...prevFilters };
+          delete updatedFilters[filterGroup];
+          return updatedFilters;
+        });
+        return prev.filter(group => group !== filterGroup);
+      } else {
+        return [...prev, filterGroup];
+      }
+    });
+  };
+
+  const handleFilterChange = (filterGroup, value, checked) => {
+    setSelectedFilters(prevFilters => {
+      const updatedFilters = { ...prevFilters };
+      
+      // Initialize array if needed
+      if (!updatedFilters[filterGroup]) {
+        updatedFilters[filterGroup] = [];
+      }
+      
+      // Add or remove value
+      if (checked) {
+        updatedFilters[filterGroup] = [...updatedFilters[filterGroup], value];
+      } else {
+        updatedFilters[filterGroup] = updatedFilters[filterGroup].filter(val => val !== value);
+        
+        // Remove empty filter groups
+        if (updatedFilters[filterGroup].length === 0) {
+          delete updatedFilters[filterGroup];
+        }
+      }
+      
+      return updatedFilters;
+    });
+  };
+
+  const clearFilters = () => {
+    setSelectedFilters({});
+    // Optionally, also clear selected filter groups
+    // setSelectedFilterGroups([]);
+  };
+
+  // Download data as Excel
+  const downloadExcel = async () => {
+    try {
+      const requestBody = {
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        accountId: selectedAccount,
+        groupBy,
+        filters: selectedFilters,
+      };
+      
+      const response = await fetch('http://localhost:8080/snowflake/download', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `cost-explorer-${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } else {
+        console.error('Failed to download Excel');
+        // Optionally show error toast
+      }
+    } catch (error) {
+      console.error('Error downloading Excel:', error);
+      // Optionally show error toast
+    }
   };
 
   const getChartConfig = () => {
@@ -259,60 +393,86 @@ const CostExplorer = () => {
           onChange={setSelectedAccount}
         />
       </div>
-
+  
       {accounts.length === 0 && (
         <p className="info-message">No accounts available for this user.</p>
       )}
       {error && <div className="error-message">{error}</div>}
-
+  
       <DateRangeSelector months={months} dateRange={dateRange} setDateRange={setDateRange} />
-
-      <GroupBySelector
-        groupByOptions={groupByOptions}
-        groupBy={groupBy}
-        setGroupBy={setGroupBy}
-        isLoadingGroups={isLoadingGroups}
-        showMoreOptions={showMoreOptions}
-        setShowMoreOptions={setShowMoreOptions}
-        dropdownRef={dropdownRef}
-      />
-
-      {/* Chart Type Toggle */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '16px 0' }}>
-        <span style={{ fontWeight: 500 }}></span>
-        <button
-          onClick={() => setChartType('mscolumn2d')}
-          style={{
-            background: chartType === 'mscolumn2d' ? '#eef2ff' : 'transparent',
-            border: '1px solid #ccc',
-            padding: '6px',
-            borderRadius: '6px',
-            cursor: 'pointer',
-          }}
-          title="Bar Chart"
-        >
-          <BarChart2 size={20} color={chartType === 'mscolumn2d' ? '#1e40af' : '#555'} />
-        </button>
-        <button
-          onClick={() => setChartType('msline')}
-          style={{
-            background: chartType === 'msline' ? '#eef2ff' : 'transparent',
-            border: '1px solid #ccc',
-            padding: '6px',
-            borderRadius: '6px',
-            cursor: 'pointer',
-          }}
-          title="Line Chart"
-        >
-          <LineChart size={20} color={chartType === 'msline' ? '#1e40af' : '#555'} />
-        </button>
+  
+      <div className="controls-row">
+        <GroupBySelector
+          groupByOptions={groupByOptions}
+          groupBy={groupBy}
+          setGroupBy={setGroupBy}
+          isLoadingGroups={isLoadingGroups}
+          showMoreOptions={showMoreOptions}
+          setShowMoreOptions={setShowMoreOptions}
+          dropdownRef={dropdownRef}
+        />
+  
+        <div className="chart-actions">
+          <div className="chart-type-selector">
+            <button
+              onClick={() => setChartType('mscolumn2d')}
+              className={`chart-type-btn ${chartType === 'mscolumn2d' ? 'active' : ''}`}
+              title="Bar Chart"
+            >
+              <BarChart2 size={20} />
+            </button>
+            <button
+              onClick={() => setChartType('msline')}
+              className={`chart-type-btn ${chartType === 'msline' ? 'active' : ''}`}
+              title="Line Chart"
+            >
+              <LineChart size={20} />
+            </button>
+          </div>
+  
+          <button
+            className={`filter-toggle-btn ${showFilters ? 'active' : ''}`}
+            onClick={() => setShowFilters(prev => !prev)}
+            title="Show Filters"
+          >
+            <Filter size={18} />
+            {Object.keys(selectedFilters).length > 0 && (
+              <span className="filter-badge">{Object.keys(selectedFilters).length}</span>
+            )}
+          </button>
+  
+          <button
+            className="download-btn"
+            onClick={downloadExcel}
+            title="Download Excel"
+          >
+            <Download size={18} />
+          </button>
+        </div>
       </div>
-
-      <ChartSection isLoading={isLoading} chartConfig={chartConfig} />
-
-      <TableSection isLoading={isLoading} tableData={tableData} tableRef={tableRef} />
+  
+      <div className="content-wrapper">
+        <div className="main-content">
+          <ChartSection isLoading={isLoading} chartConfig={chartConfig} />
+          <TableSection isLoading={isLoading} tableData={tableData} tableRef={tableRef} />
+        </div>
+  
+        <FilterSidebar
+          showFilters={showFilters}
+          setShowFilters={setShowFilters}
+          filterGroups={filterGroups}
+          selectedFilterGroups={selectedFilterGroups}
+          handleFilterGroupToggle={handleFilterGroupToggle}
+          filterOptions={filterOptions}
+          selectedFilters={selectedFilters}
+          handleFilterChange={handleFilterChange}
+          clearFilters={clearFilters}
+          isLoadingFilters={isLoadingFilters}
+          filterPanelRef={filterPanelRef}
+        />
+      </div>
     </div>
   );
-};
+}
 
 export default CostExplorer;
