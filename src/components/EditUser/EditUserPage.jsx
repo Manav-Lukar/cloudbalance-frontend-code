@@ -98,7 +98,7 @@ const EditUserPage = ({ userId, onCancel }) => {
     };
 
     try {
-      const response = await fetch(`http://localhost:8080/admin/update-user/${userId}`, {
+      const response = await fetch(`http://localhost:8080/login/update-user/${userId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

@@ -70,7 +70,7 @@ const AddUserPage = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:8080/admin/add-user", {
+      const response = await fetch("http://localhost:8080/login/add-user", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

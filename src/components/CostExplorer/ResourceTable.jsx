@@ -1,8 +1,7 @@
-// src/components/CostExplorer/ResourceTable.jsx
-import React, { useState } from "react";
+import React, { useState, forwardRef } from "react";
 import { FaFilter } from "react-icons/fa";
 
-const ResourceTable = ({ loading, columns, data, emptyMessage, tableRef }) => {
+const ResourceTable = forwardRef(({ loading, columns, data, emptyMessage }, tableRef) => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const handleSort = (key) => {
@@ -18,11 +17,7 @@ const ResourceTable = ({ loading, columns, data, emptyMessage, tableRef }) => {
     return [...data].sort((a, b) => {
       const aVal = a[sortConfig.key] || "";
       const bVal = b[sortConfig.key] || "";
-      if (sortConfig.direction === "asc") {
-        return aVal > bVal ? 1 : -1;
-      } else {
-        return aVal < bVal ? 1 : -1;
-      }
+      return sortConfig.direction === "asc" ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1);
     });
   }, [data, sortConfig]);
 
@@ -73,6 +68,6 @@ const ResourceTable = ({ loading, columns, data, emptyMessage, tableRef }) => {
       </table>
     </div>
   );
-};
+});
 
 export default ResourceTable;

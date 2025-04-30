@@ -11,6 +11,8 @@ import AccountSelector from './AccountSelector';
 import ChartSection from './ChartSection';
 import TableSection from './TableSection';
 
+import { BarChart2, LineChart } from 'lucide-react';
+
 import './CostExplorer.css';
 
 ReactFC.fcRoot(FusionCharts, Charts, FusionTheme);
@@ -27,6 +29,9 @@ const CostExplorer = () => {
   const [filters, setFilters] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingGroups, setIsLoadingGroups] = useState(false);
+  const [error, setError] = useState(null);
+
+  const [chartType, setChartType] = useState('mscolumn2d');
 
   const dropdownRef = useRef(null);
   const tableRef = useRef(null);
@@ -36,7 +41,6 @@ const CostExplorer = () => {
 
   const months = ['2024-10', '2024-11', '2024-12', '2025-01', '2025-02', '2025-03', '2025-04'];
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -47,30 +51,35 @@ const CostExplorer = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Fetch group by options
   useEffect(() => {
     const fetchGroupByOptions = async () => {
       setIsLoadingGroups(true);
       try {
-        const response = await fetch('http://localhost:8080/snowflake/all', {
+        const response = await fetch('http://localhost:8080/snowflake/groupby', {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (response.ok) {
           const data = await response.json();
           setGroupByOptions(data);
+          if (!groupBy && data.length > 0) {
+            setGroupBy(data[0].displayName);
+          }
         } else {
           console.error('Failed to fetch group by options.');
+          setError('Failed to fetch group by options.');
         }
       } catch (error) {
         console.error('Error fetching group by options:', error);
+        setError('Error fetching group by options.');
       } finally {
         setIsLoadingGroups(false);
       }
     };
-    fetchGroupByOptions();
-  }, [token]);
+    if (token) {
+      fetchGroupByOptions();
+    }
+  }, [token, groupBy]);
 
-  // Fetch accounts based on role
   useEffect(() => {
     const fetchAccounts = async () => {
       try {
@@ -85,25 +94,32 @@ const CostExplorer = () => {
             headers: { Authorization: `Bearer ${token}` },
           });
         }
+
         if (response.ok) {
           const data = await response.json();
           setAccounts(data);
           if (data.length > 0) setSelectedAccount(data[0].accountId);
         } else {
           console.error('Failed to fetch cloud accounts.');
+          setError('Failed to fetch cloud accounts.');
         }
       } catch (error) {
         console.error('Error fetching cloud accounts:', error);
+        setError('Error fetching cloud accounts.');
       }
     };
-    fetchAccounts();
+    if (role && token) {
+      fetchAccounts();
+    }
   }, [role, token]);
 
-  // Fetch cost data
   useEffect(() => {
     const fetchCostData = async () => {
-      if (!selectedAccount) return;
+      if (!selectedAccount || !groupBy) return;
+
       setIsLoading(true);
+      setError(null);
+
       try {
         const requestBody = {
           startDate: dateRange.startDate,
@@ -120,17 +136,20 @@ const CostExplorer = () => {
           },
           body: JSON.stringify(requestBody),
         });
+
         if (response.ok) {
           const data = await response.json();
           processChartData(data);
           setTableData(data);
         } else {
           console.error('Failed to fetch cost data');
+          setError('Failed to fetch cost data');
           setChartData([]);
           setTableData([]);
         }
       } catch (error) {
         console.error('Error fetching cost data:', error);
+        setError('Error fetching cost data');
         setChartData([]);
         setTableData([]);
       } finally {
@@ -140,42 +159,39 @@ const CostExplorer = () => {
     fetchCostData();
   }, [selectedAccount, dateRange, groupBy, filters]);
 
-  // Process chart data
   const processChartData = (data) => {
     if (!data || data.length === 0) {
       setChartData([]);
       return;
     }
-  
+
     const groupedFieldName = groupBy;
     const uniqueMonths = [...new Set(data.map((item) => item.MONTH))];
-  
+
     const chartDataArr = uniqueMonths.map((month) => {
       const monthObj = { month };
       const monthData = data
-        .filter((item) => item.MONTH === month && item.TOTAL_USAGE_COST >= 0) // filter out negative values
+        .filter((item) => item.MONTH === month && item.TOTAL_USAGE_COST >= 0)
         .sort((a, b) => (b.TOTAL_USAGE_COST || 0) - (a.TOTAL_USAGE_COST || 0));
-  
+
       const topItems = monthData.slice(0, 5);
       const restItems = monthData.slice(5);
-  
+
       topItems.forEach((item) => {
         const groupValue = item[groupedFieldName] || 'Unknown';
         monthObj[groupValue] = item.TOTAL_USAGE_COST || 0;
       });
-  
+
       if (restItems.length > 0) {
         monthObj['Others'] = restItems.reduce((sum, item) => sum + (item.TOTAL_USAGE_COST || 0), 0);
       }
-  
+
       return monthObj;
     });
-  
+
     setChartData(chartDataArr);
   };
-  
 
-  // Format date range for chart subtitle
   const formatDateRange = () => {
     const start = new Date(`${dateRange.startDate}-01`);
     const [endYear, endMonth] = dateRange.endDate.split('-');
@@ -184,72 +200,49 @@ const CostExplorer = () => {
     return `${start.toLocaleDateString('en-US', options)} - ${endDate.toLocaleDateString('en-US', options)}`;
   };
 
-  // Chart config generator
   const getChartConfig = () => {
-    if (!chartData.length) return null;
+    if (!tableData.length) return null;
 
-    const allKeys = chartData.reduce((keys, month) => {
-      Object.keys(month).forEach((key) => {
-        if (key !== 'month' && !keys.includes(key)) {
-          keys.push(key);
-        }
-      });
-      return keys;
-    }, []);
-    const serviceNames = allKeys.sort((a, b) => {
-      if (a === 'Others') return 1;
-      if (b === 'Others') return -1;
-      return a.localeCompare(b);
-    });
+    const labelKey = 'Month';
+    const categoryKey = Object.keys(tableData[0]).find(
+      (key) => key !== 'Month' && key !== 'Total Usage'
+    );
 
-    const colors = [
-      '#0075c2',
-      '#1aaf5d',
-      '#f2c500',
-      '#FF4560',
-      '#775DD0',
-      '#3D9970',
-      '#FF851B',
-      '#7FDBFF',
-      '#B10DC9',
-      '#01FF70',
+    const categories = [
+      {
+        category: [...new Set(tableData.map((item) => item[labelKey]))].map((month) => ({
+          label: month,
+        })),
+      },
     ];
 
-    const currentGroupOption = groupByOptions.find((option) => option.displayName === groupBy);
-    const groupByLabel = currentGroupOption ? currentGroupOption.displayName : groupBy;
+    const groups = [...new Set(tableData.map((item) => item[categoryKey]))];
+
+    const dataset = groups.map((group) => ({
+      seriesname: group,
+      data: categories[0].category.map((cat) => {
+        const match = tableData.find(
+          (item) => item[labelKey] === cat.label && item[categoryKey] === group
+        );
+        return { value: match ? match['Total Usage'].toFixed(2) : 0 };
+      }),
+    }));
 
     return {
-      type: 'mscolumn2d',
+      type: chartType,
       width: '100%',
       height: '400',
       dataFormat: 'json',
       dataSource: {
         chart: {
-          caption: `Monthly ${groupByLabel} Costs`,
-          subCaption: formatDateRange(),
+          caption: `Monthly Usage by ${categoryKey}`,
           xAxisName: 'Month',
-          yAxisName: 'Cost (in $)',
+          yAxisName: 'Total Usage',
           numberPrefix: '$',
           theme: 'fusion',
-          showValues: '0',
-          showSum: '1',
-          usePlotGradientColor: '0',
-          paletteColors: colors.slice(0, serviceNames.length).join(','),
-          legendPosition: 'bottom',
-          legendNumRows: serviceNames.length > 10 ? 2 : 1,
-          drawCrossLine: '1',
-          plotHighlightEffect: 'fadeout',
-          showPlotBorder: '0',
-          toolTipBgColor: '#ffffff',
-          toolTipPadding: '10',
-          toolTipBorderColor: '#cccccc',
-          plotFillAlpha: '80',
         },
-        categories: [{ category: chartData.map((item) => ({ label: item.month })) }],
-        dataset: serviceNames.map((service) => ({
-          seriesname: service,
-          data: chartData.map((item) => ({ value: (item[service] || 0).toFixed(2) })),
-        })),
+        categories,
+        dataset,
       },
     };
   };
@@ -267,6 +260,11 @@ const CostExplorer = () => {
         />
       </div>
 
+      {accounts.length === 0 && (
+        <p className="info-message">No accounts available for this user.</p>
+      )}
+      {error && <div className="error-message">{error}</div>}
+
       <DateRangeSelector months={months} dateRange={dateRange} setDateRange={setDateRange} />
 
       <GroupBySelector
@@ -278,6 +276,37 @@ const CostExplorer = () => {
         setShowMoreOptions={setShowMoreOptions}
         dropdownRef={dropdownRef}
       />
+
+      {/* Chart Type Toggle */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '16px 0' }}>
+        <span style={{ fontWeight: 500 }}></span>
+        <button
+          onClick={() => setChartType('mscolumn2d')}
+          style={{
+            background: chartType === 'mscolumn2d' ? '#eef2ff' : 'transparent',
+            border: '1px solid #ccc',
+            padding: '6px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+          }}
+          title="Bar Chart"
+        >
+          <BarChart2 size={20} color={chartType === 'mscolumn2d' ? '#1e40af' : '#555'} />
+        </button>
+        <button
+          onClick={() => setChartType('msline')}
+          style={{
+            background: chartType === 'msline' ? '#eef2ff' : 'transparent',
+            border: '1px solid #ccc',
+            padding: '6px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+          }}
+          title="Line Chart"
+        >
+          <LineChart size={20} color={chartType === 'msline' ? '#1e40af' : '#555'} />
+        </button>
+      </div>
 
       <ChartSection isLoading={isLoading} chartConfig={chartConfig} />
 
