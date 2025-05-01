@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './AwsServicesDashboard.css';
 import EC2Dashboard from './EC2Dashboard';
 import RDSDashboard from './RDSDashboard';
-import ASGDashboard from './ASGDashboard'; // ✅ ASG import
+import ASGDashboard from './ASGDashboard';
 
 const AwsServicesDashboard = () => {
   const [cloudAccounts, setCloudAccounts] = useState([]);
@@ -10,12 +10,23 @@ const AwsServicesDashboard = () => {
   const [selectedService, setSelectedService] = useState('EC2');
   const [ec2Data, setEc2Data] = useState([]);
   const [rdsData, setRdsData] = useState([]);
-  const [asgData, setAsgData] = useState([]); // ✅ ASG state
+  const [asgData, setAsgData] = useState([]);
   const [loading, setLoading] = useState(false);
+
   const role = localStorage.getItem('role');
   const token = localStorage.getItem('token');
 
-  // Fetch Cloud Accounts
+  // ✅ Deduplicate accounts by accountId and arnNumber
+  const deduplicateAccounts = (accounts) => {
+    const seen = new Set();
+    return accounts.filter((acc) => {
+      const key = `${acc.accountId}-${acc.arnNumber}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
+
   useEffect(() => {
     const fetchAccounts = async () => {
       try {
@@ -33,7 +44,7 @@ const AwsServicesDashboard = () => {
 
         if (response.ok) {
           const data = await response.json();
-          setCloudAccounts(data);
+          setCloudAccounts(deduplicateAccounts(data));
         } else {
           console.error('Failed to fetch cloud accounts.');
         }
@@ -45,91 +56,35 @@ const AwsServicesDashboard = () => {
     fetchAccounts();
   }, [role, token]);
 
-  // Fetch EC2 Metadata
-  useEffect(() => {
-    const fetchEC2Data = async () => {
-      if (selectedAccount && selectedService === 'EC2') {
-        setLoading(true);
-        setEc2Data([]);
-        try {
-          const response = await fetch(
-            `http://localhost:8080/api/ec2/metadata?roleArn=${selectedAccount.arnNumber}&region=us-east-1`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
-            }
-          );
-          const data = await response.json();
-          setEc2Data(data);
-        } catch (error) {
-          console.error('Error fetching EC2 metadata:', error);
-        } finally {
-          setLoading(false);
+  // Generic fetch function for services
+  const fetchServiceData = async (type, setData) => {
+    if (!selectedAccount || selectedService !== type) return;
+    setLoading(true);
+    setData([]);
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/${type.toLowerCase()}/metadata?roleArn=${selectedAccount.arnNumber}&region=us-east-1`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
         }
-      }
-    };
+      );
+      const data = await response.json();
+      setData(data);
+    } catch (error) {
+      console.error(`Error fetching ${type} metadata:`, error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchEC2Data();
-  }, [selectedAccount, selectedService, token]);
-
-  // Fetch RDS Metadata
+  // Fetch metadata for EC2, RDS, ASG depending on selection
   useEffect(() => {
-    const fetchRDSData = async () => {
-      if (selectedAccount && selectedService === 'RDS') {
-        setLoading(true);
-        setRdsData([]);
-        try {
-          const response = await fetch(
-            `http://localhost:8080/api/rds/metadata?roleArn=${selectedAccount.arnNumber}&region=us-east-1`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
-            }
-          );
-          const data = await response.json();
-          setRdsData(data);
-        } catch (error) {
-          console.error('Error fetching RDS metadata:', error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchRDSData();
-  }, [selectedAccount, selectedService, token]);
-
-  // ✅ Fetch ASG Metadata
-  useEffect(() => {
-    const fetchASGData = async () => {
-      if (selectedAccount && selectedService === 'ASG') {
-        setLoading(true);
-        setAsgData([]);
-        try {
-          const response = await fetch(
-            `http://localhost:8080/api/asg/metadata?roleArn=${selectedAccount.arnNumber}&region=us-east-1`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
-            }
-          );
-          const data = await response.json();
-          setAsgData(data);
-        } catch (error) {
-          console.error('Error fetching ASG metadata:', error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchASGData();
+    if (selectedService === 'EC2') fetchServiceData('EC2', setEc2Data);
+    else if (selectedService === 'RDS') fetchServiceData('RDS', setRdsData);
+    else if (selectedService === 'ASG') fetchServiceData('ASG', setAsgData);
   }, [selectedAccount, selectedService, token]);
 
   return (
@@ -144,7 +99,10 @@ const AwsServicesDashboard = () => {
       >
         <option value="">Select Cloud Account</option>
         {cloudAccounts.map((account) => (
-          <option key={account.accountId} value={account.accountId}>
+          <option
+            key={`${account.accountId}-${account.arnNumber}`}
+            value={account.accountId}
+          >
             {account.accountName} ({account.accountId})
           </option>
         ))}
@@ -163,14 +121,14 @@ const AwsServicesDashboard = () => {
         ))}
       </div>
 
-      {/* Render Selected Dashboard */}
-      {selectedService === 'EC2' && selectedAccount && (
+      {/* Conditional Rendering of Service Dashboards */}
+      {selectedAccount && selectedService === 'EC2' && (
         <EC2Dashboard loading={loading} ec2Data={ec2Data} />
       )}
-      {selectedService === 'RDS' && selectedAccount && (
+      {selectedAccount && selectedService === 'RDS' && (
         <RDSDashboard loading={loading} rdsData={rdsData} />
       )}
-      {selectedService === 'ASG' && selectedAccount && (
+      {selectedAccount && selectedService === 'ASG' && (
         <ASGDashboard loading={loading} asgData={asgData} />
       )}
     </div>

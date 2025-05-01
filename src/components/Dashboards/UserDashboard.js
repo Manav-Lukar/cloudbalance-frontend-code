@@ -22,7 +22,18 @@ const useFetchUsers = (role, selectedDashboard) => {
       const fetchUsers = async () => {
         try {
           setLoading(true);
-          const response = await fetch('http://localhost:8080/login/users');
+          const token = localStorage.getItem('token');
+          const response = await fetch('http://localhost:8080/login/users', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
           const data = await response.json();
           setUsers(data);
         } catch (error) {
@@ -37,6 +48,7 @@ const useFetchUsers = (role, selectedDashboard) => {
 
   return { users, loading };
 };
+
 
 const UserDashboard = () => {
   const navigate = useNavigate();
@@ -290,7 +302,6 @@ const UserDashboard = () => {
     if (normalizedRole === 'CUSTOMER') return customerMenu;
     return [];
   }, [normalizedRole]);
-
   return (
     <div className="dashboard-layout">
       <div className="navbar">

@@ -4,6 +4,7 @@ import "../AddUser/AddUser.css"; // Reusing the same CSS as AddUser
 const EditUserPage = ({ userId, onCancel }) => {
   const [cloudAccounts, setCloudAccounts] = useState([]);
   const [selectedAccountIds, setSelectedAccountIds] = useState([]);
+  const [originalRole, setOriginalRole] = useState("");
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -33,6 +34,7 @@ const EditUserPage = ({ userId, onCancel }) => {
         setLastName(userData.lastName || "");
         setEmail(userData.email || "");
         setRole(userData.role || "");
+        setOriginalRole(userData.role || ""); // Store the original role to detect changes
         
         // If the user has cloud accounts, set them
         if (userData.cloudAccounts && userData.cloudAccounts.length > 0) {
@@ -74,6 +76,8 @@ const EditUserPage = ({ userId, onCancel }) => {
       fetchCloudAccounts();
     }
   }, [token]);
+  
+  // This useEffect is no longer needed since we're handling this in handleRoleChange
 
   const handleAssociate = (id) => {
     if (!selectedAccountIds.includes(id)) {
@@ -85,16 +89,37 @@ const EditUserPage = ({ userId, onCancel }) => {
     setSelectedAccountIds((prev) => prev.filter((item) => item !== id));
   };
 
+  const handleRoleChange = (e) => {
+    const newRole = e.target.value;
+    setRole(newRole);
+    
+    // If changing to non-CUSTOMER role, clear selected accounts and show warning
+    if (newRole !== "CUSTOMER") {
+      setSelectedAccountIds([]);
+      if (originalRole === "CUSTOMER") {
+        setWarningMessage("");
+      } else {
+        setWarningMessage("");
+      }
+    } else {
+      setWarningMessage("");
+    }
+  };
+  
+  const [warningMessage, setWarningMessage] = useState("");
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Always include cloudAccountIds for CUSTOMER role users, even if empty
     const bodyData = {
       id: userId,
       firstName,
       lastName,
       email,
       role,
-      cloudAccountIds: selectedAccountIds,
+      // Always include cloudAccountIds for CUSTOMER role, even if empty
+      ...(role === "CUSTOMER" && { cloudAccountIds: selectedAccountIds })
     };
 
     try {
@@ -149,6 +174,7 @@ const EditUserPage = ({ userId, onCancel }) => {
 
       {successMessage && <div className="message success">{successMessage}</div>}
       {errorMessage && <div className="message error">{errorMessage}</div>}
+      {warningMessage && <div className="message warning">{warningMessage}</div>}
 
       <form onSubmit={handleSubmit} className="add-user-form">
         <div className="form-group">
@@ -186,7 +212,7 @@ const EditUserPage = ({ userId, onCancel }) => {
 
         <div className="form-group">
           <label>Role:</label>
-          <select value={role} onChange={(e) => setRole(e.target.value)} required>
+          <select value={role} onChange={handleRoleChange} required>
             <option value="ADMIN">ADMIN</option>
             <option value="READ_ONLY">READ_ONLY</option>
             <option value="CUSTOMER">CUSTOMER</option>

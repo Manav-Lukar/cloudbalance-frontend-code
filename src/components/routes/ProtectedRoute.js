@@ -1,11 +1,16 @@
-// components/ProtectedRoute.js
-import React from "react";
-import { Navigate } from "react-router-dom";
+// components/routes/ProtectedRoute.js
+import React from 'react';
+import { Navigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem("isAuthenticated");
+  const token = localStorage.getItem('token');
 
-  return isAuthenticated ? children : <Navigate to="/" replace />;
+  if (!token) {
+    // Not logged in
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
 };
 
 export default ProtectedRoute;

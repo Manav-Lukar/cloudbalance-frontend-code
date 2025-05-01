@@ -5,6 +5,7 @@ import Charts from 'fusioncharts/fusioncharts.charts';
 import ReactFC from 'react-fusioncharts';
 import FusionTheme from 'fusioncharts/themes/fusioncharts.theme.fusion';
 
+
 import DateRangeSelector from './DateRangeSelector';
 import GroupBySelector from './GroupBySelector';
 import AccountSelector from './AccountSelector';
@@ -31,7 +32,7 @@ const CostExplorer = () => {
   const [isLoadingGroups, setIsLoadingGroups] = useState(false);
   const [error, setError] = useState(null);
   const [chartType, setChartType] = useState('mscolumn2d');
-  
+
   // Filter related states
   const [showFilters, setShowFilters] = useState(false);
   const [filterGroups, setFilterGroups] = useState([]);
@@ -54,11 +55,13 @@ const CostExplorer = () => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowMoreOptions(false);
       }
-      
+
       // Close filter panel when clicking outside
-      if (filterPanelRef.current && 
-          !filterPanelRef.current.contains(event.target) &&
-          !event.target.closest('.filter-toggle-btn')) {
+      if (
+        filterPanelRef.current &&
+        !filterPanelRef.current.contains(event.target) &&
+        !event.target.closest('.filter-toggle-btn')
+      ) {
         setShowFilters(false);
       }
     };
@@ -80,9 +83,9 @@ const CostExplorer = () => {
           if (!groupBy && data.length > 0) {
             setGroupBy(data[0].displayName);
           }
-          
+
           // Once we have group options, also set them as potential filter groups
-          setFilterGroups(data.map(item => item.displayName));
+          setFilterGroups(data.map((item) => item.displayName));
         } else {
           console.error('Failed to fetch group by options.');
           setError('Failed to fetch group by options.');
@@ -141,13 +144,13 @@ const CostExplorer = () => {
         const response = await fetch(`http://localhost:8080/snowflake/filters/${filterGroup}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        
+
         if (response.ok) {
           const data = await response.json();
           // Make sure we have full option values
-          setFilterOptions(prevOptions => ({
+          setFilterOptions((prevOptions) => ({
             ...prevOptions,
-            [filterGroup]: data
+            [filterGroup]: data,
           }));
         } else {
           console.error(`Failed to fetch filter options for ${filterGroup}`);
@@ -158,8 +161,8 @@ const CostExplorer = () => {
         setIsLoadingFilters(false);
       }
     };
-    
-    selectedFilterGroups.forEach(filterGroup => {
+
+    selectedFilterGroups.forEach((filterGroup) => {
       if (!filterOptions[filterGroup]) {
         fetchFilterOptions(filterGroup);
       }
@@ -182,7 +185,7 @@ const CostExplorer = () => {
           groupBy,
           filters: selectedFilters,
         };
-        
+
         const response = await fetch('http://localhost:8080/snowflake/dynamic-cost-data', {
           method: 'POST',
           headers: {
@@ -248,15 +251,15 @@ const CostExplorer = () => {
   };
 
   const handleFilterGroupToggle = (filterGroup) => {
-    setSelectedFilterGroups(prev => {
+    setSelectedFilterGroups((prev) => {
       if (prev.includes(filterGroup)) {
         // Remove filter group and its selected values
-        setSelectedFilters(prevFilters => {
+        setSelectedFilters((prevFilters) => {
           const updatedFilters = { ...prevFilters };
           delete updatedFilters[filterGroup];
           return updatedFilters;
         });
-        return prev.filter(group => group !== filterGroup);
+        return prev.filter((group) => group !== filterGroup);
       } else {
         return [...prev, filterGroup];
       }
@@ -264,26 +267,26 @@ const CostExplorer = () => {
   };
 
   const handleFilterChange = (filterGroup, value, checked) => {
-    setSelectedFilters(prevFilters => {
+    setSelectedFilters((prevFilters) => {
       const updatedFilters = { ...prevFilters };
-      
+
       // Initialize array if needed
       if (!updatedFilters[filterGroup]) {
         updatedFilters[filterGroup] = [];
       }
-      
+
       // Add or remove value
       if (checked) {
         updatedFilters[filterGroup] = [...updatedFilters[filterGroup], value];
       } else {
-        updatedFilters[filterGroup] = updatedFilters[filterGroup].filter(val => val !== value);
-        
+        updatedFilters[filterGroup] = updatedFilters[filterGroup].filter((val) => val !== value);
+
         // Remove empty filter groups
         if (updatedFilters[filterGroup].length === 0) {
           delete updatedFilters[filterGroup];
         }
       }
-      
+
       return updatedFilters;
     });
   };
@@ -353,14 +356,14 @@ const CostExplorer = () => {
           onChange={setSelectedAccount}
         />
       </div>
-  
+
       {accounts.length === 0 && (
         <p className="info-message">No accounts available for this user.</p>
       )}
       {error && <div className="error-message">{error}</div>}
-  
+
       <DateRangeSelector months={months} dateRange={dateRange} setDateRange={setDateRange} />
-  
+
       <div className="controls-row">
         <GroupBySelector
           groupByOptions={groupByOptions}
@@ -371,7 +374,7 @@ const CostExplorer = () => {
           setShowMoreOptions={setShowMoreOptions}
           dropdownRef={dropdownRef}
         />
-  
+
         <div className="chart-actions">
           <div className="chart-type-selector">
             <button
@@ -389,10 +392,10 @@ const CostExplorer = () => {
               <LineChart size={20} />
             </button>
           </div>
-  
+
           <button
             className={`filter-toggle-btn ${showFilters ? 'active' : ''}`}
-            onClick={() => setShowFilters(prev => !prev)}
+            onClick={() => setShowFilters((prev) => !prev)}
             title="Show Filters"
           >
             <Filter size={18} />
@@ -400,17 +403,15 @@ const CostExplorer = () => {
               <span className="filter-badge">{Object.keys(selectedFilters).length}</span>
             )}
           </button>
-  
-          
         </div>
       </div>
-  
+
       <div className="content-wrapper">
         <div className="main-content">
           <ChartSection isLoading={isLoading} chartConfig={chartConfig} />
           <TableSection isLoading={isLoading} tableData={tableData} tableRef={tableRef} />
         </div>
-  
+
         <FilterSidebar
           showFilters={showFilters}
           setShowFilters={setShowFilters}
@@ -427,6 +428,6 @@ const CostExplorer = () => {
       </div>
     </div>
   );
-}
+};
 
 export default CostExplorer;

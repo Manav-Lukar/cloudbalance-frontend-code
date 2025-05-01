@@ -13,6 +13,7 @@ const AddUserPage = () => {
   const [role, setRole] = useState("ADMIN");
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [warningMessage, setWarningMessage] = useState("");
 
   const token = localStorage.getItem("token");
   const userRole = localStorage.getItem("role");
@@ -57,6 +58,19 @@ const AddUserPage = () => {
     setSelectedAccountIds((prev) => prev.filter((item) => item !== id));
   };
 
+  const handleRoleChange = (e) => {
+    const newRole = e.target.value;
+    setRole(newRole);
+    
+    // If changing to non-CUSTOMER role, clear selected accounts and show a note
+    if (newRole !== "CUSTOMER") {
+      setSelectedAccountIds([]);
+      setWarningMessage("");
+    } else {
+      setWarningMessage("");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -66,7 +80,8 @@ const AddUserPage = () => {
       email,
       password,
       role,
-      cloudAccountIds: selectedAccountIds,
+      // Always include cloudAccountIds for CUSTOMER role, even if empty
+      ...(role === "CUSTOMER" && { cloudAccountIds: selectedAccountIds })
     };
 
     try {
@@ -117,6 +132,7 @@ const AddUserPage = () => {
 
       {successMessage && <div className="message success">{successMessage}</div>}
       {errorMessage && <div className="message error">{errorMessage}</div>}
+      {warningMessage && <div className="message warning">{warningMessage}</div>}
 
       <form onSubmit={handleSubmit} className="add-user-form">
         <div className="form-group">
@@ -165,7 +181,7 @@ const AddUserPage = () => {
 
         <div className="form-group">
           <label>Role:</label>
-          <select value={role} onChange={(e) => setRole(e.target.value)} required>
+          <select value={role} onChange={handleRoleChange} required>
             <option value="ADMIN">ADMIN</option>
             <option value="READ_ONLY">READ_ONLY</option>
             <option value="CUSTOMER">CUSTOMER</option>

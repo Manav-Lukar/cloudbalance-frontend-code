@@ -15,5 +15,4 @@ const Sidebar = ({ menuItems, isCollapsed, toggleSidebar }) => (
     </ul>
   </div>
 );
-
 export default Sidebar;

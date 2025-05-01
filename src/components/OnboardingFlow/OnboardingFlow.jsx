@@ -16,7 +16,7 @@ const OnboardingFlow = () => {
 
   useEffect(() => {
     if (onboardingContainerRef.current) {
-      onboardingContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      onboardingContainerRef.current.scrollTo({ top: 1, behavior: 'smooth' });
     }
   }, [step]);
 
@@ -26,6 +26,7 @@ const OnboardingFlow = () => {
 
   const handleSubmit = async () => {
     const token = localStorage.getItem('token');
+    
 
     const requestBody = {
       accountId,

@@ -8,13 +8,12 @@ const AccountSelector = ({ accounts, selectedAccount, onChange }) => (
       value={selectedAccount}
       onChange={(e) => onChange(e.target.value)}
     >
-      {accounts.map((account) => (
-        <option key={account.accountId} value={account.accountId}>
+      {accounts.map((account,idx) => (
+        <option key={idx} value={account.accountId}>
           {account.accountName}
         </option>
       ))}
     </select>
   </div>
 );
-
 export default AccountSelector;
