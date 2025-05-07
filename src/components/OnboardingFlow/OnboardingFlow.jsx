@@ -2,16 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import Step1 from './step1';
 import Step2 from './step2';
 import Step3 from './step3';
-import Step4 from './Step4'; // ✅ Thank you step
+import Step4 from './Step4';
 import './onboardingflow.css';
 import { Outlet } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import api from '../../services/GetService';
 
 const OnboardingFlow = () => {
   const [step, setStep] = useState(1);
   const [roleArn, setRoleArn] = useState('');
   const [accountId, setAccountId] = useState('');
   const [accountName, setAccountName] = useState('');
-  const [isValid, setIsValid] = useState(false);  // Track validation state
+  const [isValid, setIsValid] = useState(false);
   const onboardingContainerRef = useRef(null);
 
   useEffect(() => {
@@ -26,7 +29,6 @@ const OnboardingFlow = () => {
 
   const handleSubmit = async () => {
     const token = localStorage.getItem('token');
-    
 
     const requestBody = {
       accountId,
@@ -35,27 +37,30 @@ const OnboardingFlow = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:8080/admin/add-cloud-accounts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const response = await api.post('http://localhost:8080/admin/add-cloud-accounts', requestBody);
 
-      if (!response.ok) {
-        throw new Error('API request failed');
+      if (response.status === 403) {
+        toast.error('Unauthorized! You do not have permission to perform this action.', {
+          position: 'top-right',
+          autoClose: 4000,
+        });
+        return;
       }
 
-      console.log('Cloud account created successfully');
+      toast.success('Cloud account created successfully!', {
+        position: 'top-right',
+        autoClose: 3000,
+      });
       setStep(4);
     } catch (error) {
       console.error('Error creating cloud account:', error);
-      alert('Failed to create cloud account. Please try again.');
+      toast.error('Failed to create cloud account. Please try again.', {
+        position: 'top-right',
+        autoClose: 4000,
+      });
     }
   };
-
+  
   const renderStep = () => {
     switch (step) {
       case 1:
@@ -67,7 +72,7 @@ const OnboardingFlow = () => {
             setAccountId={setAccountId}
             accountName={accountName}
             setAccountName={setAccountName}
-            setIsValid={setIsValid} // Pass setIsValid to Step1
+            setIsValid={setIsValid}
           />
         );
       case 2:
@@ -131,6 +136,8 @@ const OnboardingFlow = () => {
           </button>
         </div>
       )}
+
+      <ToastContainer />
       <Outlet />
     </div>
   );

@@ -21,7 +21,7 @@ const useFetchUsers = (role, selectedDashboard) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (selectedDashboard === 'User Management' && (role === 'ADMIN' || role === 'READ_ONLY')) {
+    if (selectedDashboard === 'User Management' && (role === 'ADMIN' || role === 'READ ONLY')) {
       const fetchUsers = async () => {
         try {
           setLoading(true);
@@ -139,7 +139,7 @@ const UserDashboard = () => {
   }, [users, sortConfig, searchQuery]);
 
   const renderDashboardContent = useMemo(() => {
-    if (selectedDashboard === 'User Management' && (role === 'ADMIN' || role === 'READ_ONLY')) {
+    if (selectedDashboard === 'User Management' && (role === 'ADMIN' || role === 'READ ONLY')) {
       const totalPages = Math.ceil(sortedUsers.length / usersPerPage);
       const paginatedUsers = sortedUsers.slice(
         currentUserPage * usersPerPage,
@@ -302,7 +302,7 @@ const UserDashboard = () => {
       { label: 'AWS Services', action: () => handleDashboardChange('AWS Services') },
     ];
 
-    if (normalizedRole === 'ADMIN' || normalizedRole === 'READ_ONLY') return fullAccessMenu;
+    if (normalizedRole === 'ADMIN' || normalizedRole === 'READ ONLY') return fullAccessMenu;
     if (normalizedRole === 'CUSTOMER') return customerMenu;
     return [];
   }, [normalizedRole]);

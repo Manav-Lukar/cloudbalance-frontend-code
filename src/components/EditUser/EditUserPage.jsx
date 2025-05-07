@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import "../AddUser/AddUser.css"; // Reusing the same CSS as AddUser
+import { navigate } from "raviger";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import api from "../../services/GetService"; // Adjust the import path as necessary
 
-const EditUserPage = ({ userId, onCancel }) => {
+const EditUserPage = ({ userId }) => {
   const [cloudAccounts, setCloudAccounts] = useState([]);
   const [selectedAccountIds, setSelectedAccountIds] = useState([]);
   const [originalRole, setOriginalRole] = useState("");
@@ -9,10 +13,7 @@ const EditUserPage = ({ userId, onCancel }) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [role, setRole] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(true);
-
   const token = localStorage.getItem("token");
   const userRole = localStorage.getItem("role");
 
@@ -21,15 +22,8 @@ const EditUserPage = ({ userId, onCancel }) => {
     const fetchUserData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:8080/login/users/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-        const userData = await response.json();
+        const response = await api.get(`login/users/${userId}`);
+        const userData = await response.data;
         setFirstName(userData.firstName || "");
         setLastName(userData.lastName || "");
         setEmail(userData.email || "");
@@ -42,7 +36,7 @@ const EditUserPage = ({ userId, onCancel }) => {
         }
       } catch (error) {
         console.error("Failed to fetch user data:", error);
-        setErrorMessage("Failed to load user data.");
+        toast.error("Failed to load user data.");
       } finally {
         setLoading(false);
       }
@@ -57,18 +51,14 @@ const EditUserPage = ({ userId, onCancel }) => {
   useEffect(() => {
     const fetchCloudAccounts = async () => {
       try {
-        const response = await fetch("http://localhost:8080/admin/cloud-accounts", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await api.get("admin/cloud-accounts");
 
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-        const data = await response.json();
-        setCloudAccounts(data);
+        const data = await response.data;
+        setCloudAccounts(response.data);
       } catch (error) {
         console.error("Failed to fetch cloud accounts:", error);
+        toast.error("Failed to load cloud accounts.");
       }
     };
 
@@ -76,13 +66,15 @@ const EditUserPage = ({ userId, onCancel }) => {
       fetchCloudAccounts();
     }
   }, [token]);
-  
-  // This useEffect is no longer needed since we're handling this in handleRoleChange
 
   const handleAssociate = (id) => {
     if (!selectedAccountIds.includes(id)) {
       setSelectedAccountIds((prev) => [...prev, id]);
     }
+  };
+
+  const onCancel = () => {
+    navigate("/user-dashboard");
   };
 
   const handleRemoveAssociation = (id) => {
@@ -92,21 +84,12 @@ const EditUserPage = ({ userId, onCancel }) => {
   const handleRoleChange = (e) => {
     const newRole = e.target.value;
     setRole(newRole);
-    
+
     // If changing to non-CUSTOMER role, clear selected accounts and show warning
     if (newRole !== "CUSTOMER") {
       setSelectedAccountIds([]);
-      if (originalRole === "CUSTOMER") {
-        setWarningMessage("");
-      } else {
-        setWarningMessage("");
-      }
-    } else {
-      setWarningMessage("");
     }
   };
-  
-  const [warningMessage, setWarningMessage] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -123,37 +106,34 @@ const EditUserPage = ({ userId, onCancel }) => {
     };
 
     try {
-      const response = await fetch(`http://localhost:8080/login/update-user/${userId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(bodyData),
-      });
+      const response = await api.put(`login/update-user/${userId}`,bodyData);
 
-      if (response.ok) {
-        setSuccessMessage("User updated successfully!");
-        setErrorMessage("");
+      // if (response.ok) {
+        toast.success("User updated successfully!");
         setTimeout(() => {
           onCancel(); // Go back to user dashboard
         }, 2000);
-      } else {
-        const errorText = await response.text();
-        let errorMessage;
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.message || JSON.stringify(errorData);
-        } catch {
-          errorMessage = errorText;
-        }
-        setSuccessMessage("");
-        setErrorMessage("Failed to update user: " + errorMessage);
-      }
+      // } 
+      // else {
+      //   const errorText = await response.text();
+      //   let errorMessage;
+      //   try {
+      //     const errorData = JSON.parse(errorText);
+      //     errorMessage = errorData.message || JSON.stringify(errorData);
+
+      //     // Check for specific error (e.g., email already exists)
+      //     if (errorMessage.includes("email already exists")) {
+      //       toast.error("This email is already in use. Please choose another.");
+      //     } else {
+      //       toast.error("Failed to update user: " + errorMessage);
+      //     }
+      //   } catch {
+      //     toast.error("Failed to update user: " + errorText);
+      //   }
+      // }
     } catch (error) {
       console.error("Error while updating user:", error);
-      setSuccessMessage("");
-      setErrorMessage("An error occurred. Check console for details.");
+      toast.error("An error occurred. Check console for details.");
     }
   };
 
@@ -171,10 +151,6 @@ const EditUserPage = ({ userId, onCancel }) => {
   return (
     <>
       <h2 className="edit-user-text">Edit User</h2>
-
-      {successMessage && <div className="message success">{successMessage}</div>}
-      {errorMessage && <div className="message error">{errorMessage}</div>}
-      {warningMessage && <div className="message warning">{warningMessage}</div>}
 
       <form onSubmit={handleSubmit} className="add-user-form">
         <div className="form-group">
@@ -214,7 +190,7 @@ const EditUserPage = ({ userId, onCancel }) => {
           <label>Role:</label>
           <select value={role} onChange={handleRoleChange} required>
             <option value="ADMIN">ADMIN</option>
-            <option value="READ_ONLY">READ_ONLY</option>
+            <option value="READ ONLY">READ ONLY</option>
             <option value="CUSTOMER">CUSTOMER</option>
           </select>
         </div>
@@ -263,6 +239,8 @@ const EditUserPage = ({ userId, onCancel }) => {
           <button type="button" onClick={onCancel} className="cancel-btn">Cancel</button>
         </div>
       </form>
+
+      <ToastContainer />
     </>
   );
 };

@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FiCopy } from 'react-icons/fi';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import roleImage from '../../assets/role.png'; // adjust path as needed
 import './onboardingflow.css';
 
@@ -43,10 +45,12 @@ const Step1 = ({
 
   const handlePolicyCopy = () => {
     navigator.clipboard.writeText(JSON.stringify(trustPolicy, null, 2));
+    toast.success('Trust policy copied!');
   };
 
   const handleRoleNameCopy = () => {
     navigator.clipboard.writeText('CK-Tuner-Role-dev2');
+    toast.success('Role name copied!');
   };
 
   const validateInputs = () => {
@@ -66,12 +70,22 @@ const Step1 = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     validateInputs();
   }, [roleArn, accountId, accountName]);
 
   return (
     <div className="onboarding-container">
+      <ToastContainer
+        position="top-right"
+        autoClose={1500}
+        hideProgressBar={false}
+        closeOnClick
+        pauseOnFocusLoss={false}
+        draggable
+        pauseOnHover={false}
+      />
+
       <h1 className="onboarding-title">Create an IAM Role</h1>
 
       <ol className="onboarding-steps">
@@ -153,7 +167,7 @@ const Step1 = ({
               value={roleArn}
               onChange={(e) => setRoleArn(e.target.value)}
               placeholder="Enter the IAM Role ARN here"
-              disabled={normalizedRole === 'READ_ONLY'}
+              disabled={normalizedRole === 'READ ONLY'}
             />
             <input
               id="accountId"
@@ -162,7 +176,7 @@ const Step1 = ({
               value={accountId}
               onChange={(e) => setAccountId(e.target.value)}
               placeholder="Enter the Account ID here"
-              disabled={normalizedRole === 'READ_ONLY'}
+              disabled={normalizedRole === 'READ ONLY'}
             />
             <input
               id="accountName"
@@ -171,7 +185,7 @@ const Step1 = ({
               value={accountName}
               onChange={(e) => setAccountName(e.target.value)}
               placeholder="Enter the Account Name here"
-              disabled={normalizedRole === 'READ_ONLY'}
+              disabled={normalizedRole === 'READ ONLY'}
             />
           </div>
         </li>

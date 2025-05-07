@@ -3,20 +3,22 @@ import './AwsServicesDashboard.css';
 import EC2Dashboard from './EC2Dashboard';
 import RDSDashboard from './RDSDashboard';
 import ASGDashboard from './ASGDashboard';
+import api from '../../services/GetService';
 
 const AwsServicesDashboard = () => {
   const [cloudAccounts, setCloudAccounts] = useState([]);
-  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [selectedAccount, setSelectedAccount] = useState([]);
   const [selectedService, setSelectedService] = useState('EC2');
   const [ec2Data, setEc2Data] = useState([]);
   const [rdsData, setRdsData] = useState([]);
   const [asgData, setAsgData] = useState([]);
   const [loading, setLoading] = useState(false);
 
+
   const role = localStorage.getItem('role');
   const token = localStorage.getItem('token');
 
-  // ✅ Deduplicate accounts by accountId and arnNumber
+
   const deduplicateAccounts = (accounts) => {
     const seen = new Set();
     return accounts.filter((acc) => {
@@ -31,23 +33,15 @@ const AwsServicesDashboard = () => {
     const fetchAccounts = async () => {
       try {
         let response;
-        if (role === 'ADMIN' || role === 'READ_ONLY') {
-          response = await fetch('http://localhost:8080/admin/cloud-accounts', {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+        if (role === 'ADMIN' || role === 'READ ONLY') {
+          response = await api.get('admin/cloud-accounts');
         } else if (role === 'CUSTOMER') {
           const userId = localStorage.getItem('userId');
-          response = await fetch(`http://localhost:8080/admin/assigned/${userId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          response = await api.get(`/admin/assigned/${userId}`);
         }
 
-        if (response.ok) {
-          const data = await response.json();
-          setCloudAccounts(deduplicateAccounts(data));
-        } else {
-          console.error('Failed to fetch cloud accounts.');
-        }
+          setCloudAccounts(deduplicateAccounts(response.data));
+       
       } catch (error) {
         console.error('Error fetching cloud accounts:', error);
       }
@@ -56,23 +50,18 @@ const AwsServicesDashboard = () => {
     fetchAccounts();
   }, [role, token]);
 
+
+
   // Generic fetch function for services
   const fetchServiceData = async (type, setData) => {
     if (!selectedAccount || selectedService !== type) return;
     setLoading(true);
     setData([]);
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/${type.toLowerCase()}/metadata?roleArn=${selectedAccount.arnNumber}&region=us-east-1`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      const data = await response.json();
-      setData(data);
+      const response = await api.get(
+        `http://localhost:8080/api/${type.toLowerCase()}/metadata?roleArn=${selectedAccount.arnNumber}&region=us-east-1`);
+      const data = await response.data();
+      setData(response.data);
     } catch (error) {
       console.error(`Error fetching ${type} metadata:`, error);
     } finally {

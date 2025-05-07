@@ -5,7 +5,6 @@ import Charts from 'fusioncharts/fusioncharts.charts';
 import ReactFC from 'react-fusioncharts';
 import FusionTheme from 'fusioncharts/themes/fusioncharts.theme.fusion';
 
-
 import DateRangeSelector from './DateRangeSelector';
 import GroupBySelector from './GroupBySelector';
 import AccountSelector from './AccountSelector';
@@ -15,6 +14,7 @@ import FilterSidebar from './FilterSidebar';
 import { BarChart2, LineChart, Download, Filter } from 'lucide-react';
 
 import './CostExplorer.css';
+import api from '../../services/GetService';
 
 ReactFC.fcRoot(FusionCharts, Charts, FusionTheme);
 
@@ -74,22 +74,15 @@ const CostExplorer = () => {
     const fetchGroupByOptions = async () => {
       setIsLoadingGroups(true);
       try {
-        const response = await fetch('http://localhost:8080/snowflake/groupby', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setGroupByOptions(data);
-          if (!groupBy && data.length > 0) {
-            setGroupBy(data[0].displayName);
-          }
+        const response = await api.get('snowflake/groupby');
 
-          // Once we have group options, also set them as potential filter groups
-          setFilterGroups(data.map((item) => item.displayName));
-        } else {
-          console.error('Failed to fetch group by options.');
-          setError('Failed to fetch group by options.');
+        const data = response.data;
+        setGroupByOptions(response.data);
+        if (!groupBy && data.length > 0) {
+          setGroupBy(data[0].displayName);
         }
+        // Once we have group options, also set them as potential filter groups
+        setFilterGroups(data.map((item) => item.displayName));
       } catch (error) {
         console.error('Error fetching group by options:', error);
         setError('Error fetching group by options.');
@@ -107,25 +100,16 @@ const CostExplorer = () => {
     const fetchAccounts = async () => {
       try {
         let response;
-        if (role === 'ADMIN' || role === 'READ_ONLY') {
-          response = await fetch('http://localhost:8080/admin/cloud-accounts', {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+        if (role === 'ADMIN' || role === 'READ ONLY') {
+          response = await api.get('admin/cloud-accounts');
         } else if (role === 'CUSTOMER') {
           const userId = localStorage.getItem('userId');
-          response = await fetch(`http://localhost:8080/admin/assigned/${userId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          response = await api.get(`admin/assigned/${userId}`);
         }
 
-        if (response.ok) {
-          const data = await response.json();
-          setAccounts(data);
-          if (data.length > 0) setSelectedAccount(data[0].accountId);
-        } else {
-          console.error('Failed to fetch cloud accounts.');
-          setError('Failed to fetch cloud accounts.');
-        }
+        const data = await response.data;
+        setAccounts(response.data);
+        if (data.length > 0) setSelectedAccount(data[0].accountId);
       } catch (error) {
         console.error('Error fetching cloud accounts:', error);
         setError('Error fetching cloud accounts.');
@@ -141,20 +125,14 @@ const CostExplorer = () => {
     const fetchFilterOptions = async (filterGroup) => {
       setIsLoadingFilters(true);
       try {
-        const response = await fetch(`http://localhost:8080/snowflake/filters/${filterGroup}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await api.get(`snowflake/filters/${filterGroup}`);
 
-        if (response.ok) {
-          const data = await response.json();
-          // Make sure we have full option values
-          setFilterOptions((prevOptions) => ({
-            ...prevOptions,
-            [filterGroup]: data,
-          }));
-        } else {
-          console.error(`Failed to fetch filter options for ${filterGroup}`);
-        }
+        const data = response.data;
+        // Make sure we have full option values
+        setFilterOptions((prevOptions) => ({
+          ...prevOptions,
+          [filterGroup]: data,
+        }));
       } catch (error) {
         console.error(`Error fetching filter options for ${filterGroup}:`, error);
       } finally {
@@ -186,25 +164,11 @@ const CostExplorer = () => {
           filters: selectedFilters,
         };
 
-        const response = await fetch('http://localhost:8080/snowflake/dynamic-cost-data', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(requestBody),
-        });
+        const response = await api.post('snowflake/dynamic-cost-data',requestBody);
 
-        if (response.ok) {
-          const data = await response.json();
-          processChartData(data);
-          setTableData(data);
-        } else {
-          console.error('Failed to fetch cost data');
-          setError('Failed to fetch cost data');
-          setChartData([]);
-          setTableData([]);
-        }
+        const data = await response.data;
+        processChartData(data);
+        setTableData(data);
       } catch (error) {
         console.error('Error fetching cost data:', error);
         setError('Error fetching cost data');
@@ -429,5 +393,4 @@ const CostExplorer = () => {
     </div>
   );
 };
-
 export default CostExplorer;

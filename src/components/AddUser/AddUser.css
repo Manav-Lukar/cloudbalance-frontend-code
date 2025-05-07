@@ -69,6 +69,21 @@ button[type='submit']:hover {
   background-color: #1565c0;
 }
 
+button[type='Cancel-button'] {
+  padding: 12px 10px;
+  background-color: #dadee1;
+  color: black;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+button[type='Cancel-button']:hover {
+  background-color: #b6b8bb;
+}
+
+
 /* Dropdown */
 .dropdown-label {
   font-weight: bold;

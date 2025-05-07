@@ -14,9 +14,6 @@ const Step4 = ({ setStep }) => {
         <img src={tick} alt="green tick" />
       </div>
       <h2>Thank You For CUR Access!</h2>
-      <p>
-        If you have additional accounts to onboard, please click <strong>Onboard</strong> to proceed.
-      </p>
       <div className="onboard-info-box">
         Alternatively, you can begin onboarding your accounts on Tuner to receive usage-based recommendations.
         <br />

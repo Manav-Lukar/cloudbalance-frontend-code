@@ -6,11 +6,11 @@ const useFetchUsers = (role, selectedDashboard) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (selectedDashboard === 'User Management' && (role === 'ADMIN' || role === 'READ_ONLY')) {
+    if (selectedDashboard === 'User Management' && (role === 'ADMIN' || role === 'READ ONLY')) {
       const fetchUsers = async () => {
         try {
           setLoading(true);
-          const response = await fetch('http://localhost:8080/login/users');
+          const response = await api.get('login/users');
           const data = await response.json();
           setUsers(data);
         } catch (error) {

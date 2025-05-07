@@ -12,30 +12,24 @@ import EditUserPage from '../EditUser/EditUserPage';
 import OnboardingFlow from '../OnboardingFlow/OnboardingFlow';
 import AwsServicesDashboard from '../AWS_Service/AwsServicesDashboard';
 import CostExplorer from '../CostExplorer/CostExplorer';
+import api from '../../services/GetService';
 
 const useFetchUsers = (role, selectedDashboard) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (selectedDashboard === 'user-dashboard' && (role === 'ADMIN' || role === 'READ_ONLY')) {
+    if (selectedDashboard === 'user-dashboard' && (role === 'ADMIN' || role === 'READ ONLY')) {
       const fetchUsers = async () => {
         try {
           setLoading(true);
-          const token = localStorage.getItem('token');
-          const response = await fetch('http://localhost:8080/login/users', {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          });
-
-          if (!response.ok) {
+          const response = await api.get('/login/users');
+          if (!response.data) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
 
-          const data = await response.json();
-          setUsers(data);
+          // const data = await response.data();
+          setUsers(response.data);
         } catch (error) {
           console.error('Error fetching users:', error);
         } finally {
@@ -45,15 +39,16 @@ const useFetchUsers = (role, selectedDashboard) => {
       fetchUsers();
     }
   }, [selectedDashboard, role]);
-
   return { users, loading };
 };
-
 
 const UserDashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const path = location.pathname.replace('/', '') || 'user-dashboard';
+  const { userId } = useParams();
+
+  const path = location.pathname.replace('/', '').split('/')[0] || 'user-dashboard';
+  const subPath = location.pathname.split('/')[2] || '';
 
   const [currentUserPage, setCurrentUserPage] = useState(0);
   const [showAddUser, setShowAddUser] = useState(false);
@@ -72,27 +67,34 @@ const UserDashboard = () => {
     const isAuthenticated = localStorage.getItem('isAuthenticated');
     const role = localStorage.getItem('role');
     const currentPath = location.pathname;
-  
+
     if (!isAuthenticated) {
       navigate('/');
     } else if (role === 'CUSTOMER' && currentPath === '/user-dashboard') {
       navigate('/cost-explorer');
     }
   }, [navigate, location]);
-  
+
+  useEffect(() => {
+    if (location.pathname.includes('/user-dashboard/add')) {
+      setShowAddUser(true);
+      setShowEditUser(false);
+    } else if (location.pathname.includes('/user-dashboard/edit') && userId) {
+      setSelectedUserId(userId);
+      setShowEditUser(true);
+      setShowAddUser(false);
+    } else {
+      setShowAddUser(false);
+      setShowEditUser(false);
+    }
+  }, [location.pathname, userId]);
 
   const { users, loading } = useFetchUsers(role, path);
 
   const handleLogout = async () => {
     const token = localStorage.getItem('token');
     try {
-      await fetch('http://localhost:8080/auth/logout', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      await api.post('auth/logout');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -102,8 +104,18 @@ const UserDashboard = () => {
   };
 
   const handleEditClick = (userId) => {
-    setSelectedUserId(userId);
-    setShowEditUser(true);
+    navigate(`/user-dashboard/edit/${userId}`);
+  };
+
+  const handleAddUserClick = () => {
+    navigate('/user-dashboard/add');
+  };
+
+  const handleBackToDashboard = () => {
+    navigate('/user-dashboard');
+    setShowAddUser(false);
+    setShowEditUser(false);
+    setSelectedUserId(null);
   };
 
   const handlePagination = useCallback((direction) => {
@@ -124,7 +136,6 @@ const UserDashboard = () => {
 
   const sortedUsers = useMemo(() => {
     let filteredUsers = [...users];
-
     if (searchQuery) {
       filteredUsers = filteredUsers.filter((user) =>
         `${user.firstName} ${user.lastName} ${user.email}`
@@ -132,24 +143,18 @@ const UserDashboard = () => {
           .includes(searchQuery.toLowerCase())
       );
     }
-
     if (sortConfig.key) {
       filteredUsers.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === 'asc' ? -1 : 1;
-        }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === 'asc' ? 1 : -1;
-        }
+        if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
         return 0;
       });
     }
-
     return filteredUsers;
   }, [users, sortConfig, searchQuery]);
 
   const renderDashboardContent = useMemo(() => {
-    if (path === 'user-dashboard' && (role === 'ADMIN' || role === 'READ_ONLY')) {
+    if (path === 'user-dashboard' && (role === 'ADMIN' || role === 'READ ONLY')) {
       const totalPages = Math.ceil(sortedUsers.length / usersPerPage);
       const paginatedUsers = sortedUsers.slice(
         currentUserPage * usersPerPage,
@@ -162,19 +167,12 @@ const UserDashboard = () => {
             <h1 className="dashboard-title">Users</h1>
             <div className="dashboard-action-btns">
               {showAddUser || showEditUser ? (
-                <button
-                  className="back-btn"
-                  onClick={() => {
-                    setShowAddUser(false);
-                    setShowEditUser(false);
-                    setSelectedUserId(null);
-                  }}
-                >
+                <button className="back-btn" onClick={handleBackToDashboard}>
                   Back to Dashboard
                 </button>
               ) : (
                 role === 'ADMIN' && (
-                  <button className="add-user-btn" onClick={() => setShowAddUser(true)}>
+                  <button className="add-user-btn" onClick={handleAddUserClick}>
                     + Add New User
                   </button>
                 )
@@ -232,8 +230,8 @@ const UserDashboard = () => {
                         <td colSpan={role === 'ADMIN' ? 7 : 6}>Loading users...</td>
                       </tr>
                     ) : (
-                      paginatedUsers.map((user, index) => (
-                        <tr key={index}>
+                      paginatedUsers.map((user) => (
+                        <tr key={user.id}>
                           <td>{user.id}</td>
                           <td>{user.firstName}</td>
                           <td>{user.lastName}</td>
@@ -279,7 +277,17 @@ const UserDashboard = () => {
     if (path === 'cost-explorer') return <CostExplorer />;
 
     return <h1>Welcome to Dashboard</h1>;
-  }, [path, role, sortedUsers, currentUserPage, loading, showAddUser, showEditUser, selectedUserId, searchQuery, handlePagination, handleSort]);
+  }, [
+    path,
+    role,
+    sortedUsers,
+    currentUserPage,
+    loading,
+    showAddUser,
+    showEditUser,
+    selectedUserId,
+    searchQuery,
+  ]);
 
   const sidebarMenu = useMemo(() => {
     const fullAccessMenu = [
@@ -292,16 +300,17 @@ const UserDashboard = () => {
       { label: 'User Management', path: 'user-dashboard' },
       { label: 'Cost Explorer', path: 'cost-explorer' },
       { label: 'AWS Services', path: 'aws-services' },
-    ]
+    ];
     const customerMenu = [
       { label: 'Cost Explorer', path: 'cost-explorer' },
       { label: 'AWS Services', path: 'aws-services' },
     ];
     if (normalizedRole === 'ADMIN') return fullAccessMenu;
-    if (normalizedRole === 'READ_ONLY') return readOnlyMenu;
+    if (normalizedRole === 'READ ONLY') return readOnlyMenu;
     if (normalizedRole === 'CUSTOMER') return customerMenu;
     return [];
   }, [normalizedRole]);
+
   return (
     <div className="dashboard-layout">
       <div className="navbar">
@@ -310,7 +319,6 @@ const UserDashboard = () => {
             <img src={loginIcon} alt="Cloudkeeper logo" className="clickable-logo" />
           </Link>
         </h2>
-
         <div className="navbar-right">
           <div className="user-info">
             <img src={userIcon} alt="User Icon" className="user-icon" />
@@ -326,15 +334,11 @@ const UserDashboard = () => {
       <div className={`dashboard-content ${isSidebarCollapsed ? 'collapsed' : ''}`}>
         <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
           <div className="sidebar-toggle" onClick={toggleSidebar}>
-            {isSidebarCollapsed ? '☰' : '☰'}
+            ☰
           </div>
           <ul className="sidebar-menu">
             {sidebarMenu.map((item, index) => (
-              <li
-                key={index}
-                onClick={() => navigate(`/${item.path}`)}
-                title={item.label}
-              >
+              <li key={index} onClick={() => navigate(`/${item.path}`)} title={item.label}>
                 {isSidebarCollapsed ? null : item.label}
               </li>
             ))}

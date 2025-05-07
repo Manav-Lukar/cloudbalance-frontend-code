@@ -1,3 +1,4 @@
+
 // App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
@@ -69,6 +70,9 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/user-dashboard" element={<UserDashboard />} />
+        <Route path="/user-dashboard/add" element={<UserDashboard />} />
+        <Route path="/user-dashboard/edit/:userId" element={<UserDashboard />} />
 
         <Route path="*" element={<ErrorPage />} />
       </Routes>
